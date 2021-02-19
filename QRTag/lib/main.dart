@@ -1,16 +1,24 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:fast_qr_reader_view/fast_qr_reader_view.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 List<CameraDescription> cameras;
 
-Future<Null> main() async {
-  cameras = await availableCameras();
-  runApp(new QRTag());
+void main() {
+  runApp(new MainPage());
 }
 
+void logError(String code, String message) =>
+  print('Error: $code\nError Message: $message');
 
-class QRTag extends StatelessWidget {
+class MainPage extends StatefulWidget {
+  QRTag createState()=> QRTag();
+
+}
+
+class QRTag extends State<MainPage> {
+  var _permissionStatus;
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -26,26 +34,36 @@ class QRTag extends StatelessWidget {
         // or simply save your changes to "hot reload" in a Flutter IDE).
         // Notice that the counter didn't reset back to zero; the application
         // is not restarted.
-				
+
         primarySwatch: Colors.blue,
         // This makes the visual density adapt to the platform that you run
         // the app on. For desktop platforms, the controls will be smaller and
         // closer together (more dense) than on mobile platforms.
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-			darkTheme: ThemeData(
+      darkTheme: ThemeData(
         brightness: Brightness.dark,
         /* dark theme settings */
-				primarySwatch: Colors.blue,
+        primarySwatch: Colors.blue,
         // This makes the visual density adapt to the platform that you run
         // the app on. For desktop platforms, the controls will be smaller and
         // closer together (more dense) than on mobile platforms.
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-
       home: MyHomePage(title: 'QRTag'),
     );
   }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback(onLayoutDone);
+  }
+
+  void onLayoutDone(Duration timeStamp) async {
+    _permissionStatus = await Permission.camera.status;
+    setState(() {});
+  } 
 }
 
 class MyHomePage extends StatefulWidget {
@@ -67,7 +85,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
+  dynamic _permissionStatus;
   void getLocationInfo() {
     setState(() {
       // This call to setState tells the Flutter framework that something has
@@ -101,8 +119,8 @@ class _MyHomePageState extends State<MyHomePage> {
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
               Container(
-								margin: const EdgeInsets.all(15.0),
-								padding: const EdgeInsets.all(5.0),
+                margin: const EdgeInsets.all(15.0),
+                padding: const EdgeInsets.all(5.0),
                 decoration:
                     BoxDecoration(border: Border.all(color: Colors.blueAccent)),
                 child: Row(
@@ -112,7 +130,11 @@ class _MyHomePageState extends State<MyHomePage> {
                     TextButton(
                       child: Text("Scan Now"),
                       onPressed: getLocationInfo,
-                    )
+                    ),
+                    Text(
+                      '$_permissionStatus',
+                      style: Theme.of(context).textTheme.headline5,
+                    ),
                   ],
                 ),
               )
@@ -120,49 +142,5 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ) // This trailing comma makes auto-formatting nicer for build methods.
         );
-  }
-}
-
-class CameraApp extends StatefulWidget {
-  @override
-  _CameraAppState createState() => new _CameraAppState();
-}
-
-class _CameraAppState extends State<CameraApp> {
-  QRReaderController controller;
-
-  @override
-  void initState() {
-    super.initState();
-    controller = new QRReaderController(cameras[0], ResolutionPreset.medium, [CodeFormat.qr], (dynamic value){
-        print(value); // the result!
-    // ... do something
-    // wait 3 seconds then start scanning again.
-    new Future.delayed(const Duration(seconds: 3), controller.startScanning);
-    });
-    controller.initialize().then((_) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {});
-      controller.startScanning();
-    });
-  }
-
-  @override
-  void dispose() {
-    controller?.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (!controller.value.isInitialized) {
-      return new Container();
-    }
-    return new AspectRatio(
-        aspectRatio:
-        controller.value.aspectRatio,
-        child: new QRReaderPreview(controller));
   }
 }
