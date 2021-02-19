@@ -1,31 +1,28 @@
-const app = require('express')();
-const http = require('http').Server(app);
-const io = require('socket.io')(http);
+import express from "express";
+import { Server } from "http";
+import { Server as socketIO } from "socket.io";
+import State from "./state.js";
 
-class State {
-  team_scores = new Map();
-  players = new Map();
-  player_scores = new Map();
-  event_history = [];
-  base_locations = new Map();
-}
+let state = new State();
 
-let state = new State
+const app = express();
+const http = new Server(app);
+const io = new socketIO(http);
 
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/index.html');
+const port = process.env.PORT | 4003;
+
+app.use("/", express.static("static"));
+
+io.on("connection", (socket) => {
+  console.log("a user connected");
 });
 
-io.on('connection', (socket) => {
-  console.log('a user connected');
-});
-
-io.on('join', (data) => {
+io.on("join", (data) => {
   let player_data = JSON.parse(data);
 
-  stat
+  console.log("Player joined: data " + player_data);
 });
 
-http.listen(3000, () => {
-  console.log('listening on *:3000');
+http.listen(port, () => {
+  console.log(`"listening on http://localhost:${port}"`);
 });
