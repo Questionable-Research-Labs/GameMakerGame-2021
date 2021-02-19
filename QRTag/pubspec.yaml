@@ -33,9 +33,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  fast_qr_reader_view:
-    git:
-      url: git://github.com/facundomedica/fast_qr_reader_view.git
+  qr_code_scanner: ^0.3.5
   permission_handler: 5.1.0
 
 # For information on the generic Dart part of this file, see the

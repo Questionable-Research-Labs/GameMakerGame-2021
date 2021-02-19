@@ -1,24 +1,31 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:fast_qr_reader_view/fast_qr_reader_view.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'dart:io';
 
-List<CameraDescription> cameras;
+import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+
+import 'package:permission_handler/permission_handler.dart';
+import 'package:qr_code_scanner/qr_code_scanner.dart';
+
+import "qrview.dart";
 
 void main() {
   runApp(new MainPage());
 }
 
 void logError(String code, String message) =>
-  print('Error: $code\nError Message: $message');
+    print('Error: $code\nError Message: $message');
 
 class MainPage extends StatefulWidget {
-  QRTag createState()=> QRTag();
-
+  const MainPage({
+    Key key,
+  }) : super(key: key);
+  QRTag createState() => QRTag();
 }
 
 class QRTag extends State<MainPage> {
-  var _permissionStatus;
+  
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -50,24 +57,13 @@ class QRTag extends State<MainPage> {
         // closer together (more dense) than on mobile platforms.
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(title: 'QRTag'),
+      home: HomePage(title: 'QRTag'),
     );
   }
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback(onLayoutDone);
-  }
-
-  void onLayoutDone(Duration timeStamp) async {
-    _permissionStatus = await Permission.camera.status;
-    setState(() {});
-  } 
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+class HomePage extends StatefulWidget {
+  HomePage({Key key, this.title}) : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -81,19 +77,31 @@ class MyHomePage extends StatefulWidget {
   final String title;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _HomePageState createState() => _HomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _HomePageState extends State<HomePage> {
   dynamic _permissionStatus;
-  void getLocationInfo() {
+
+  Future<void> getLocationInfo() async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => QRPage(title: "QR Tag")),
+    );
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
+      
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback(onLayoutDone);
+  }
+
+  void onLayoutDone(Duration timeStamp) async {
+    _permissionStatus = await Permission.camera.status;
+    setState(() {});
   }
 
   @override
@@ -131,13 +139,15 @@ class _MyHomePageState extends State<MyHomePage> {
                       child: Text("Scan Now"),
                       onPressed: getLocationInfo,
                     ),
-                    Text(
-                      '$_permissionStatus',
-                      style: Theme.of(context).textTheme.headline5,
-                    ),
+                    
                   ],
                 ),
-              )
+              ),
+              Text(
+                // '$_permissionStatus',
+                '$_permissionStatus',
+                style: Theme.of(context).textTheme.headline5,
+              ),
             ],
           ),
         ) // This trailing comma makes auto-formatting nicer for build methods.
