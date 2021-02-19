@@ -1,7 +1,8 @@
 import express from "express";
 import { Server } from "http";
 import { Server as socketIO } from "socket.io";
-import State from "./state.js";
+import State from "./State.js";
+import Player from "./Player.js";
 
 let state = new State();
 
@@ -15,12 +16,23 @@ app.use("/", express.static("static"));
 
 io.on("connection", (socket) => {
   console.log("a user connected");
-});
 
-io.on("join", (data) => {
-  let player_data = JSON.parse(data);
+  socket.emit('ready');
 
-  console.log("Player joined: data " + player_data);
+  socket.on('join', (data) => {
+    let playerData = JSON.parse(data);
+
+    console.log("Player joining", playerData);
+
+    state.players[socket.ipAddress] = new Player(playerData["playerID"], playerData["username"], socket);
+
+    socket.on("disconnect", socket => {
+      let player = state.players[socket.ipAddress];
+      state.players.delete(socket.ipAddress);
+
+      console.log("Player ", player.playerID, ":", player.username, "disconnected");
+    })
+  });
 });
 
 http.listen(port, () => {

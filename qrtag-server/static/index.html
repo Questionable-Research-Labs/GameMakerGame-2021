@@ -14,13 +14,14 @@
       crossorigin="anonymous"
     ></script>
     <script>
-      const socket = io("ws://localhost:4003");
+      const socket = io("ws://localhost:4003").connect();
 
-      console.log("Connected");
-
-      socket.emit("join", {
-        player_id: 0,
-        username: "Test User",
+      socket.on('ready', () => {
+        console.log("Connection is ready");
+        socket.emit('join', JSON.stringify({
+          playerID: "01",
+          username: "Test user"
+        }));
       });
     </script>
   </head>
