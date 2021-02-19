@@ -14,14 +14,17 @@
       crossorigin="anonymous"
     ></script>
     <script>
+      const playerInfo = {
+        playerID: "01",
+        username: "Test user",
+        team: 0
+      };
+
       const socket = io("ws://localhost:4003").connect();
 
       socket.on('ready', () => {
         console.log("Connection is ready");
-        socket.emit('join', JSON.stringify({
-          playerID: "01",
-          username: "Test user"
-        }));
+        socket.emit('join', JSON.stringify(playerInfo));
       });
     </script>
   </head>

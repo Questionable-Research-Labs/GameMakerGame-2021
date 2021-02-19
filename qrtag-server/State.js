@@ -4,4 +4,5 @@ export default class State {
   player_scores = new Map();
   event_history = [];
   base_locations = new Map();
+  lookup = new Map();
 }
