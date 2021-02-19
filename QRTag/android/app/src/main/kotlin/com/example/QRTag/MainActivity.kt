@@ -1,4 +1,4 @@
-package com.example.covid_tag
+package com.example.QRTag
 
 import io.flutter.embedding.android.FlutterActivity
 

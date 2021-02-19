@@ -94,11 +94,11 @@ typings/
 *.log
 *.pyc
 *.swp
-covid_tag/.DS_Store
-covid_tag/.atom/
-covid_tag/.buildlog/
-covid_tag/.history
-covid_tag/.svn/
+QRTag/.DS_Store
+QRTag/.atom/
+QRTag/.buildlog/
+QRTag/.history
+QRTag/.svn/
 
 # IntelliJ related
 *.iml
@@ -114,16 +114,16 @@ covid_tag/.svn/
 # Flutter/Dart/Pub related
 **/doc/api/
 **/ios/Flutter/.last_build_id
-covid_tag/.dart_tool/
-covid_tag/.flutter-plugins
-covid_tag/.flutter-plugins-dependencies
-covid_tag/.packages
-covid_tag/.pub-cache/
-covid_tag/.pub/
-covid_tag/build/
+QRTag/.dart_tool/
+QRTag/.flutter-plugins
+QRTag/.flutter-plugins-dependencies
+QRTag/.packages
+QRTag/.pub-cache/
+QRTag/.pub/
+QRTag/build/
 
 # Web related
-covid_tag/lib/generated_plugin_registrant.dart
+QRTag/lib/generated_plugin_registrant.dart
 
 # Symbolication related
 app.*.symbols

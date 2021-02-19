@@ -1,4 +1,4 @@
-# covid_tag
+# QRTag
 
 A new Flutter project.
 
