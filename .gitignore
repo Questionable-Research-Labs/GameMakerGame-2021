@@ -86,3 +86,47 @@ typings/
 
 # DynamoDB Local files
 .dynamodb/
+
+## Flutter
+
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+covid_tag/.DS_Store
+covid_tag/.atom/
+covid_tag/.buildlog/
+covid_tag/.history
+covid_tag/.svn/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+covid_tag/.dart_tool/
+covid_tag/.flutter-plugins
+covid_tag/.flutter-plugins-dependencies
+covid_tag/.packages
+covid_tag/.pub-cache/
+covid_tag/.pub/
+covid_tag/build/
+
+# Web related
+covid_tag/lib/generated_plugin_registrant.dart
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
