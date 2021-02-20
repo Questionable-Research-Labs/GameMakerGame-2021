@@ -1,9 +1,13 @@
+import 'dart:js';
+
+import 'package:QRTag/gameview.dart';
 import 'package:QRTag/model/app_state.dart';
 import 'package:QRTag/qrcode.dart';
 import 'package:QRTag/store/actions.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:web_socket_channel/io.dart';
 import 'dart:convert';
+
 
 import 'utill.dart';
 import 'store/store.dart' as appstore;
@@ -50,13 +54,10 @@ Future scanBase(QRCode qrCode) async {
 
 Future initWS() async {
   final store = appstore.store;
-  final socket = IOWebSocketChannel.connect("ws://localhost:4003");
+  final socket = IOWebSocketChannel.connect("ws://qrtag.qrl.nz:4003");
   socket.stream.listen((message) {
     dynamic data = jsonDecode(message);
-    print("New message from websocket: "+message);
-    if (data["message"] == "ready") {
-      store.dispatch(SocketReady(true));
-    }
+    handleMessage(data);
   });
   socket.sink.done.then((v) {
     print("WEBSOCKET EXITED");
@@ -65,3 +66,52 @@ Future initWS() async {
   store.dispatch(SocketReady(false));
 }
 
+Future sendScan(QRCode code) async {
+  final store = appstore.store;
+  final socket = store.state.webSocketChannel;
+  final message = <String, dynamic>{
+    "message": "scan",
+    "id": code.id,
+    "type": code.type,
+    "time": code.tos,
+  };
+
+  socket.sink.add(jsonEncode(message));
+
+  var result = jsonDecode(await socket.stream.single);
+
+  if (["not active", "bad scan"].contains(result['message'])) {
+    Future.error(result['message']);
+  } else {
+    handleMessage(result);
+  }
+}
+
+void handleMessage(Map<String, dynamic> data) {
+  final store = appstore.store;
+  switch (data['message']) {
+    case "ready":
+      store.dispatch(SocketReady(true));
+      break;
+
+    case "start game":
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => GameView(title: "GAME ON!")),
+      );
+
+      break;
+      
+    default:
+      print("Unimplemented message received");
+  }
+}
+
+
+AppState getState() {
+  final store = appstore.store;
+  print("Got State!");
+  print(store.state);
+  return store.state;
+}

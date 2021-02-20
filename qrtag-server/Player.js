@@ -5,7 +5,6 @@ export default class Player {
   score = 0;
   team = 0;
   active = true;
-  ready = false;
 
   constructor(playerID, username, team, socket) {
     this.playerID = playerID;

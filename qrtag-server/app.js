@@ -56,6 +56,9 @@ app.use("/", express.static("static"));
 io.on("connection", (socket, req) => {
   let isMonitor = false;
   let ip = req.connection.remoteAddress;
+
+  state.connections++;
+
   console.log("New connection from", ip);
 
   // Tell the client we are ready to connect
@@ -112,9 +115,22 @@ io.on("connection", (socket, req) => {
 
         // Tell the client that they successfully joined
         socket.send('{"message": "joined", "state": "accepted"}');
+
+        if (state.connections >= 2 && state.connections === state.players.size) {
+          io.emit("{'message': 'start game'}");
+          state.gameOn = true;
+        }
+
         break;
 
+      // *-----------------*
+      // *      scan       *
+      // *-----------------*
       case 'scan':
+        // Errors:
+        //  - base scan
+        //  - not active
+
         let type = json["type"];
         let scanner = state.players.get(ip);
 
@@ -163,21 +179,15 @@ io.on("connection", (socket, req) => {
 
         break;
 
+      // *-----------------*
+      // *     online      *
+      // *-----------------*
       case 'online':
         socket.send(JSON.stringify({message: 'connected', value: state.players}))
         break;
 
-      case 'ready':
-        state.players.get(ip).ready = true;
-
-        let unreadied = _.filter(state.players, {ready: false});
-        if (unreadied.length < 1) {
-          state.gameOn = true;
-          io.emit("{'message': 'game start'}");
-        }
-        break;
-
       case 'monitor':
+        state.connections--;
         if (!monitor) {
           monitor = socket;
           isMonitor = true;
@@ -208,6 +218,8 @@ io.on("connection", (socket, req) => {
       monitor = null;
       return;
     }
+
+    state.connections--;
 
     // Get the player that disconnected
     let player = state.players[ip];
