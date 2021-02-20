@@ -85,7 +85,9 @@ class _QRPageState extends State<QRPage> {
       
       // Check if valid QR code
       try {
-        var decodedJSON = jsonDecode(scanData.code.replaceAll("http://", "")) as Map<String, dynamic>;
+        var softwareCJFixes = scanData.code.replaceAll("http://", "");
+        if (softwareCJFixes.substring(0, softwareCJFixes.length - 1)!="}") {softwareCJFixes+="}";}
+        var decodedJSON = jsonDecode(softwareCJFixes) as Map<String, dynamic>;
         Navigator.pop(context,decodedJSON);
         controller?.dispose();
       } on FormatException catch (e) {

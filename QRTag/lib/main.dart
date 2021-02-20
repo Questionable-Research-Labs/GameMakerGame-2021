@@ -15,6 +15,7 @@ import 'store/actions.dart';
 import 'model/app_state.dart';
 
 import "qrview.dart";
+import "utill.dart";
 
 void main() {
   final Store<AppState> _store =
@@ -111,7 +112,9 @@ class _HomePageState extends State<HomePage> {
     // });
   }
 
-  Future<void> _getLocationInfo(BuildContext context, store) async {
+  
+
+  Future<void> _getQRLocationInfo(BuildContext context, store) async {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -122,6 +125,38 @@ class _HomePageState extends State<HomePage> {
       store.dispatch(
         Location(result["id"])
       );
+    } else {
+      await genWrongQRCodeDialog(context,"Location QR Code");
+    }
+  }
+  Future<void> _getQRTeamID(BuildContext context, store) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => QRPage(title: "Scan your Team's flag QR code")),
+    );
+    print(result);
+    if (result["type"] == "base" && isNumeric(result["id"])) {
+      store.dispatch(
+        TeamID(int.parse(result["id"]))
+      );
+    } else {
+      await genWrongQRCodeDialog(context,"Team Flag QR Code");
+    }
+  }
+  Future<void> _getQRPlayerID(BuildContext context, store) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => QRPage(title: "Scan your personal Player ID QR code")),
+    );
+    print(result);
+    if (result["type"] == "player" && isNumeric(result["id"])) {
+      store.dispatch(
+        PlayerID(result["id"])
+      );
+    } else {
+      await genWrongQRCodeDialog(context,"Personal Player ID QR Code");
     }
   }
 
@@ -149,6 +184,9 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
+              // ****************
+              // Location Scanner
+              // ****************
               Container(
                 margin: const EdgeInsets.all(15.0),
                 padding: const EdgeInsets.only(left: 20.0, right: 20.0),
@@ -157,6 +195,7 @@ class _HomePageState extends State<HomePage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    Text("Location:",style: TextStyle(fontWeight: FontWeight.bold)),
                     StoreConnector<AppState, AppState>(
                         converter: (store) => store.state,
                         builder: (context, store) {
@@ -164,9 +203,21 @@ class _HomePageState extends State<HomePage> {
                         }),
                     ButtonBar(
                       children: [
-                        RaisedButton(onPressed: null, child: Text("Clear")),
+                        StoreConnector<AppState, Store>(
+                            converter: (store) {
+                              return store;
+                              // return () => store.dispatch(Location("QRL"));
+                            },
+                            builder: (context, store) {
+                              return RaisedButton(
+                                onPressed: store.state.location!=null ? () {store.dispatch(Location(null));} : null,
+                                child: Text("Clear")
+                                );
+                            }),
                         StoreConnector<AppState, VoidCallback>(
-                            converter: (store) { return () => _getLocationInfo(context, store);},
+                            converter: (store) {
+                              return () => _getQRLocationInfo(context, store);
+                            },
                             builder: (context, callback) {
                               return RaisedButton(
                                 child: Text("Scan Now"),
@@ -177,7 +228,96 @@ class _HomePageState extends State<HomePage> {
                     )
                   ],
                 ),
-              )
+              ),
+              // ****************
+              // Team Scanner
+              // ****************
+              Container(
+                margin: const EdgeInsets.all(15.0),
+                padding: const EdgeInsets.only(left: 20.0, right: 20.0),
+                decoration:
+                    BoxDecoration(border: Border.all(color: Colors.blueAccent)),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("Team:",style: TextStyle(fontWeight: FontWeight.bold)),
+                    StoreConnector<AppState, AppState>(
+                        converter: (store) => store.state,
+                        builder: (context, store) {
+                          return Text(store.teamID ?? "");
+                        }),
+                    ButtonBar(
+                      children: [
+                        StoreConnector<AppState, Store>(
+                            converter: (store) {
+                              return store;
+                            },
+                            builder: (context, store) {
+                              return RaisedButton(
+                                onPressed: store.state.teamID!=null ? () {store.dispatch(TeamID(null));} : null,
+                                child: Text("Clear")
+                                );
+                            }),
+                        StoreConnector<AppState, VoidCallback>(
+                            converter: (store) {
+                              return () => _getQRTeamID(context, store);
+                            },
+                            builder: (context, callback) {
+                              return RaisedButton(
+                                child: Text("Scan Now"),
+                                onPressed: callback,
+                              );
+                            }),
+                      ],
+                    )
+                  ],
+                ),
+              ),
+              // ****************
+              // Player ID Scanner
+              // ****************
+              Container(
+                margin: const EdgeInsets.all(15.0),
+                padding: const EdgeInsets.only(left: 20.0, right: 20.0),
+                decoration:
+                    BoxDecoration(border: Border.all(color: Colors.blueAccent)),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("Player ID:",style: TextStyle(fontWeight: FontWeight.bold)),
+                    StoreConnector<AppState, AppState>(
+                        converter: (store) => store.state,
+                        builder: (context, store) {
+                          return Text(store.playerID ?? "");
+                        }),
+                    ButtonBar(
+                      children: [
+                        StoreConnector<AppState, Store>(
+                            converter: (store) {
+                              return store;
+                            },
+                            builder: (context, store) {
+                              return RaisedButton(
+                                onPressed: store.state.playerID!=null ? () {store.dispatch(PlayerID(null));} : null,
+                                child: Text("Clear")
+                                );
+                            }),
+                        StoreConnector<AppState, VoidCallback>(
+                            converter: (store) {
+                              return () => _getQRPlayerID(context, store);
+                            },
+                            builder: (context, callback) {
+                              return RaisedButton(
+                                child: Text("Scan Now"),
+                                onPressed: callback,
+                              );
+                            }),
+                      ],
+                    )
+                  ],
+                ),
+              ),
+              
             ],
           ),
         ));
