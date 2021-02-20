@@ -148,7 +148,10 @@ io.on("connection", (socket, req) => {
 
           if (base === scanner.team) {
             if (scanner.hasBase(state)) {
-              scanner.giveBase(state, base);
+              scanner.removeBase(state);
+              let index = scanner.getIndex(state);
+              state.players.get(index).increaseScore();
+              state.teamScores[scanner.team]++;
             }
             state.players.get(ip).activate();
           } else {

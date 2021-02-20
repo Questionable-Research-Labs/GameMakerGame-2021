@@ -99,4 +99,8 @@ export default class Player {
     this.active = true;
     this.socket.send("{'message': 'activate'}");
   }
+
+  increaseScore() {
+    this.score++;
+  }
 }
