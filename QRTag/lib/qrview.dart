@@ -81,8 +81,10 @@ class _QRPageState extends State<QRPage> {
       print("QR CODE FOUND: ");
       print(scanData.format);
       print(scanData.code);
+      
       Navigator.pop(context,scanData.code);
-      dispose();
+      controller?.dispose();
+      
     });
   }
 
