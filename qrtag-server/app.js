@@ -11,6 +11,7 @@ let state = new State();
 const app = express();
 const http = new Server(app);
 const io = new socketIO(http);
+let monitor;
 
 const port = process.env.PORT | 4003;
 
@@ -21,12 +22,23 @@ app.use("/", express.static("static"));
 // *  on connect  *
 // *--------------*
 io.on("connection", (socket) => {
-  console.log("a user connected");
+  console.log("New connection from client");
   socket.emit('ready');
 
-  // *--------------*
-  // *     join     *
-  // *--------------*
+
+
+  // *-----------------*
+  // * monitor connect *
+  // *-----------------*
+  socket.on('monitor', socket => {
+    monitor = socket;
+
+    console.log("Monitor connected");
+  })
+
+  // *-----------------*
+  // *      join       *
+  // *-----------------*
   socket.on('join', (data) => {
     // Get the users id
     let ip = socket.ipAddress;
@@ -50,18 +62,28 @@ io.on("connection", (socket) => {
 
     console.log("Player joining", playerData);
 
-
     // Save the information
     state.players[ip] = newPlayer;
 
     // Tell the client that they successfuly joined
     socket.send('joined');
+
+    // The the monitor about the updated state
+    if (monitor) {
+      monitor.send('update', JSON.stringify(state));
+    }
   });
 
-  // *--------------*
-  // *  disconnect  *
-  // *--------------*
+  // *-----------------*
+  // *    disconnect   *
+  // *-----------------*
   socket.on("disconnect", socket => {
+    // Handle the monitor disconnecting differently
+    if (socket === monitor) {
+      monitor = undefined;
+      return;
+    }
+
     // Get the websockets IP Address
     let ip = socket.ipAddress;
 
