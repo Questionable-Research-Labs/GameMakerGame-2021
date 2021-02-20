@@ -27,6 +27,12 @@ AppState reducer(AppState prevState, dynamic action) {
     case SocketReady:
       newState.socketReady = action.payload;
       break;
+    case CurrentlyDeactivated:
+      newState.currentlyDeactivated = action.payload;
+      break;
+    case HomeBaseStolen:
+      newState.homeBaseStolen = action.payload;
+      break;
     default: 
       print("Unmatched reducer AppState Action!!!!!");
   }

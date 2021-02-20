@@ -35,3 +35,13 @@ class SocketReady {
   final bool payload;
   SocketReady(this.payload);
 }
+
+class CurrentlyDeactivated {
+  final bool payload;
+  CurrentlyDeactivated(this.payload);
+}
+
+class HomeBaseStolen {
+  final bool payload;
+  HomeBaseStolen(this.payload);
+}

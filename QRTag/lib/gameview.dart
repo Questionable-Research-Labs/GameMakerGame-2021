@@ -10,16 +10,26 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
 import 'qrview.dart';
+import 'utill.dart';
+import 'socket.dart';
 
 Future<void> handleQRCode(QRCode qrCode) async {
+  final state = getState();
   switch (qrCode.type) {
     case "player":
-
+      if (qrCode.id != state.playerID) {
+        scanPlayer(qrCode).then((_) => {
+          print("Sucess For scan, it do be gamer")
+        });
+      }
       break;
     case "base":
+      if (qrCode.id != state.teamID) {
+        scanBase(qrCode);
+      }
       break;
     default:
-    
+    print("Invalid QR Code Scaned");
   }
 }
 

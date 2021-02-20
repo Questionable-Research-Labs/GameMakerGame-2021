@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'model/app_state.dart';
+import 'store/store.dart' as appstore;
+
 Future<void> genWrongQRCodeDialog(context,typeNeeded) async {
   return showDialog<void>(
     context: context,
@@ -32,4 +35,11 @@ bool isNumeric(String s) {
     return false;
   }
   return int.parse(s, onError: (e) => null) != null;
+}
+
+AppState getState() {
+  final store = appstore.store;
+  print("Got State!");
+  print(store.state);
+  return store.state;
 }

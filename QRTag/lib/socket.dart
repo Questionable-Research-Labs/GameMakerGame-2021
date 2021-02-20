@@ -4,7 +4,8 @@ import 'package:QRTag/store/actions.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:web_socket_channel/io.dart';
 import 'dart:convert';
-import 'package:redux/redux.dart';
+
+import 'utill.dart';
 import 'store/store.dart' as appstore;
 // import 'package:flutter_redux/flutter_redux.dart';
 
@@ -64,9 +65,3 @@ Future initWS() async {
   store.dispatch(SocketReady(false));
 }
 
-AppState getState() {
-  final store = appstore.store;
-  print("Got State!");
-  print(store.state);
-  return store.state;
-}

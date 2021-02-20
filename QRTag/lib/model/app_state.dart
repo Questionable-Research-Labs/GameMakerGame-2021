@@ -9,7 +9,9 @@ class AppState {
   String username;
   Tuple2<int,int> playerNumbers; // <playersReady,playersTotal>
   IOWebSocketChannel webSocketChannel;
-  bool socketReady; 
+  bool socketReady;
+  bool currentlyDeactivated;
+  bool homeBaseStolen;
 
   AppState({this.playerNumbers = const Tuple2<int,int>(0,1), this.socketReady = false});
 
@@ -21,6 +23,8 @@ class AppState {
     playerNumbers = another.playerNumbers;
     webSocketChannel = another.webSocketChannel;
     socketReady = another.socketReady;
+    currentlyDeactivated = another.currentlyDeactivated;
+    homeBaseStolen = another.homeBaseStolen;
 
   }
 }
