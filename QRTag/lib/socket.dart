@@ -120,11 +120,3 @@ void handleMessage(Map<String, dynamic> data) {
       print("Unimplemented message received");
   }
 }
-
-
-AppState getState() {
-  final store = appstore.store;
-  print("Got State!");
-  print(store.state);
-  return store.state;
-}
