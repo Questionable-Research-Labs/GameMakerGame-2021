@@ -24,7 +24,8 @@ export default class Player {
     let index = _.findIndex(state.baseLocations, {location: this.playerID.toString()});
 
     if (!index) {
-      return "no such base";
+      socket.send("{'message':'no such base'}");
+      return;
     }
 
     state.baseLocations[index].location = base.toString();
@@ -36,9 +37,9 @@ export default class Player {
 
     for (let player of state.players) {
       player.socket.send(JSON.stringify({
-        message: "base set",
+        message: "base move",
         team: this.team,
-        playerID: this.playerID
+        username: this.username
       }));
     }
   }
@@ -52,14 +53,6 @@ export default class Player {
     this.socket.send(JSON.stringify({
       message: "base remove",
     }));
-
-    for (let player of state.players) {
-      player.socket.send(JSON.stringify({
-        message: "base pass",
-        team: this.team,
-        playerID: this.playerID
-      }));
-    }
   }
 
   getIndex(state) {

@@ -168,6 +168,11 @@ io.on("connection", (socket, req) => {
               let index = scanner.getIndex(state);
               state.players.get(index).increaseScore();
               state.teamScores[scanner.team]++;
+              io.emit(JSON.stringify({
+                message: "point scored",
+                team: scanner.team,
+                player: scanner.username
+              }))
             }
             state.players.get(ip).activate();
           } else {

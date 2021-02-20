@@ -80,7 +80,7 @@ Future sendScan(QRCode code) async {
 
   var result = jsonDecode(await socket.stream.single);
 
-  if (["not active", "bad scan"].contains(result['message'])) {
+  if (["not active", "bad scan", "no such base"].contains(result['message'])) {
     Future.error(result['message']);
   } else {
     handleMessage(result);
@@ -95,14 +95,33 @@ void handleMessage(Map<String, dynamic> data) {
       break;
 
     case "start game":
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => GameView(title: "GAME ON!")),
-      );
+      // Navigator.push(
+      //   context,
+      //   MaterialPageRoute(
+      //       builder: (context) => GameView(title: "GAME ON!")),
+      // );
+      print("game started");
 
       break;
-      
+
+    case "point scored":
+      // team: team that scored the point
+      // player: username of the player that scored a point
+      print("point scored");
+
+      break;
+
+    case "base receive":
+      // baseID: the ID of the base
+
+      break;
+
+    case "base move":
+      // team: the team that the player who has the base belongs to
+      // username: the players username
+
+      break;
+
     default:
       print("Unimplemented message received");
   }
