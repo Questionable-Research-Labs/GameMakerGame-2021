@@ -1,79 +1,76 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:permission_handler/permission_handler.dart';
-import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:redux/redux.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/status.dart' as websocketSatus;
 
 import 'store/reducer.dart';
+import 'store/actions.dart';
 import 'model/app_state.dart';
 
 import "qrview.dart";
 
 void main() {
-
-  
-  final Store<AppState> _store = Store<AppState>(reducer, initialState: AppState(test: false));
+  final Store<AppState> _store =
+      Store<AppState>(reducer, initialState: AppState());
   runApp(new MainPage(store: _store));
 }
 
 void logError(String code, String message) =>
     print('Error: $code\nError Message: $message');
 
-class MainPage extends StatefulWidget { 
-  final Store<AppState> store; 
+class MainPage extends StatefulWidget {
+  final Store<AppState> store;
 
-  const MainPage({
-    Key key,
-    this.store
-  }) : super(key: key);
-  
+  const MainPage({Key key, this.store}) : super(key: key);
+
   QRTag createState() => QRTag(store);
 }
 
 // Root of aplication
 class QRTag extends State<MainPage> {
-  final Store<AppState> store; 
+  final Store<AppState> store;
   QRTag(this.store);
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'QR Tag',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
+    return StoreProvider<AppState>(
+        store: store,
+        child: MaterialApp(
+          title: 'QR Tag',
+          theme: ThemeData(
+            // This is the theme of your application.
+            //
+            // Try running your application with "flutter run". You'll see the
+            // application has a blue toolbar. Then, without quitting the app, try
+            // changing the primarySwatch below to Colors.green and then invoke
+            // "hot reload" (press "r" in the console where you ran "flutter run",
+            // or simply save your changes to "hot reload" in a Flutter IDE).
+            // Notice that the counter didn't reset back to zero; the application
+            // is not restarted.
 
-        primarySwatch: Colors.blue,
-        // This makes the visual density adapt to the platform that you run
-        // the app on. For desktop platforms, the controls will be smaller and
-        // closer together (more dense) than on mobile platforms.
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        /* dark theme settings */
-        primarySwatch: Colors.blue,
-        // This makes the visual density adapt to the platform that you run
-        // the app on. For desktop platforms, the controls will be smaller and
-        // closer together (more dense) than on mobile platforms.
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: HomePage(title: 'QRTag'),
-    );
+            primarySwatch: Colors.blue,
+            // This makes the visual density adapt to the platform that you run
+            // the app on. For desktop platforms, the controls will be smaller and
+            // closer together (more dense) than on mobile platforms.
+            visualDensity: VisualDensity.adaptivePlatformDensity,
+          ),
+          darkTheme: ThemeData(
+            brightness: Brightness.dark,
+            /* dark theme settings */
+            primarySwatch: Colors.blue,
+            // This makes the visual density adapt to the platform that you run
+            // the app on. For desktop platforms, the controls will be smaller and
+            // closer together (more dense) than on mobile platforms.
+            visualDensity: VisualDensity.adaptivePlatformDensity,
+          ),
+          home: HomePage(title: 'QRTag'),
+        ));
   }
 }
 
@@ -105,24 +102,27 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback(onLayoutDone);
 
-    final channel = IOWebSocketChannel.connect('ws://echo.websocket.org');
-    channel.sink.add('Hello!');
-    channel.stream.listen((message) {
-      channel.sink.add('received!');
-      print(message);
-      channel.sink.close(websocketSatus.goingAway);
-    });
-
+    // final channel = IOWebSocketChannel.connect('ws://echo.websocket.org');
+    // channel.sink.add('Hello!');
+    // channel.stream.listen((message) {
+    //   channel.sink.add('received!');
+    //   print(message);
+    //   channel.sink.close(websocketSatus.goingAway);
+    // });
   }
 
-  Future<void> _getLocationInfo(BuildContext context) async {
+  Future<void> _getLocationInfo(BuildContext context, store) async {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
           builder: (context) => QRPage(title: "Scan the location QR code")),
     );
-
-    setState(() {});
+    print(result);
+    if (result["type"] == "location") {
+      store.dispatch(
+        Location(result["id"])
+      );
+    }
   }
 
   void onLayoutDone(Duration timeStamp) async {
@@ -144,43 +144,43 @@ class _HomePageState extends State<HomePage> {
           // the App.build method, and use it to set our appbar title.
           title: Text(widget.title),
         ),
-        body: Builder(
-            builder: (context) =>
-
-                // Center is a layout widget. It takes a single child and positions it
-                // in the middle of the parent.
-                Container(
-                  margin: const EdgeInsets.only(left: 20.0, right: 20.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: <Widget>[
-                      Container(
-                        margin: const EdgeInsets.all(15.0),
-                        padding: const EdgeInsets.only(left: 20.0, right: 20.0),
-                        decoration: BoxDecoration(
-                            border: Border.all(color: Colors.blueAccent)),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text("Location:"),
-                            ButtonBar(
-                              children: [
-                                RaisedButton(
-                                    onPressed: null, child: Text("Clear")),
-                                RaisedButton(
-                                  child: Text("Scan Now"),
-                                  onPressed: () {
-                                    _getLocationInfo(context);
-                                  },
-                                ),
-                              ],
-                            )
-                          ],
-                        ),
-                      )
-                    ],
-                  ),
-                )));
+        body: Container(
+          margin: const EdgeInsets.only(left: 20.0, right: 20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: <Widget>[
+              Container(
+                margin: const EdgeInsets.all(15.0),
+                padding: const EdgeInsets.only(left: 20.0, right: 20.0),
+                decoration:
+                    BoxDecoration(border: Border.all(color: Colors.blueAccent)),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    StoreConnector<AppState, AppState>(
+                        converter: (store) => store.state,
+                        builder: (context, store) {
+                          return Text(store.location ?? "");
+                        }),
+                    ButtonBar(
+                      children: [
+                        RaisedButton(onPressed: null, child: Text("Clear")),
+                        StoreConnector<AppState, VoidCallback>(
+                            converter: (store) { return () => _getLocationInfo(context, store);},
+                            builder: (context, callback) {
+                              return RaisedButton(
+                                child: Text("Scan Now"),
+                                onPressed: callback,
+                              );
+                            }),
+                      ],
+                    )
+                  ],
+                ),
+              )
+            ],
+          ),
+        ));
   }
 
   @override
