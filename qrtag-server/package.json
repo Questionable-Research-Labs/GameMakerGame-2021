@@ -9,10 +9,12 @@
   "dependencies": {
     "body-parser": "^1.19.0",
     "express": "~4.16.1",
-    "socket.io": "^3.1.1"
+    "lodash": "^4.17.20",
+    "ws": "^7.4.3"
   },
   "type": "module",
   "devDependencies": {
+    "cors": "^2.8.5",
     "nodemon": "^2.0.7"
   }
 }

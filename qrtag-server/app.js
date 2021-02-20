@@ -1,8 +1,10 @@
 import express from "express";
+import cors from "cors";
 import {Server} from "http";
-import {Server as socketIO} from "socket.io";
+import WebSocket from "ws";
 import State from "./State.js";
 import Player from "./Player.js";
+import _ from "lodash";
 
 // Create the state object
 let state = new State();
@@ -10,66 +12,110 @@ let state = new State();
 // Create all the state stuff
 const app = express();
 const http = new Server(app);
-const io = new socketIO(http, {
-  cors: {
-    origin: '*',
-  }
-});
+const io = new WebSocket.Server({server: http});
 const port = process.env.PORT | 4003;
 
+let monitor;
+
+app.use(cors());
+
+// Function to create state update object for monitor
+const create_update = () => {
+  return {
+    players: [...state.players.keys()].map(key => {
+      let player = state.players[key];
+      return {
+        ipAddress: key,
+        id: player.userID,
+        username: player.username,
+        score: player.score,
+        active: player.active,
+      }
+    }),
+    teamScores: state.team_scores,
+    baseLocations: state.base_locations,
+    message: "update"
+  }
+};
+
 // Serve the static files
-app.use("/", express.static("static"));
+  app.use("/", express.static("static"));
 
 // *--------------*
 // *  on connect  *
 // *--------------*
-io.on("connection", (socket) => {
-  console.log("New connection from client");
-  socket.emit('ready');
+io.on("connection", (socket, req) => {
+  let isMonitor = false;
+  let ip = req.connection.remoteAddress;
+  console.log("New connection from", ip);
 
-  // *-----------------*
-  // *      join       *
-  // *-----------------*
+  // Tell the client we are ready to connect
+  socket.send('{"message": "ready"}');
 
-  socket.on('join', (data) => {
-    // Get the users id
-    let ip = socket.handshake.address;
 
-    console.log(ip);
+  // When a message is recieved
+  socket.onmessage = (data) => {
+    const json = JSON.parse(data.data);
 
-    // Deserialize the request
-    let playerData = JSON.parse(data);
+    switch (json['message']) {
+      // *-----------------*
+      // *      join       *
+      // *-----------------*
+      case 'join':
+        // Get the team
+        let team = json["team"];
 
-    // Get the team
-    let team = playerData["team"];
+        // Create a new Player object
+        let newPlayer = new Player(json["playerID"], json["username"], socket);
 
-    // Create a new Player object
-    let newPlayer = new Player(playerData["playerID"], playerData["username"], socket);
+        // Add the player id to team lookup table
+        state.lookup[newPlayer.playerID] = team;
 
-    // Add the player id to team lookup table
-    state.lookup[newPlayer.playerID] = team;
+        // Check that the teams has a score
+        if (!state.team_scores[team]) {
+          state.team_scores[team] = 0;
+        }
 
-    // Check that the teams has a score
-    if (!state.team_scores[team]) {
-      state.team_scores[team] = 0;
+        console.log("Player joining", json);
+
+        // Save the information
+        state.players[ip] = newPlayer;
+
+        // Tell the client that they successfully joined
+        socket.send('{"message": "joined", "state": "accepted"}');
+        break;
+
+      case 'monitor':
+        if (!monitor) {
+          monitor = socket;
+          isMonitor = true;
+          socket.send('{"message": "monitor connect", "status": "accepted"}');
+          console.log("Monitor connected");
+        } else {
+          socket.send('{"message": "monitor connect", "status": "rejected"}');
+          socket.close();
+        }
+        break;
+      default:
+        break;
     }
 
-    console.log("Player joining", playerData);
-
-    // Save the information
-    state.players[ip] = newPlayer;
-
-    // Tell the client that they successfuly joined
-    socket.emit('joined');
-  });
+    // Notify the monitor about the update
+    if (monitor) {
+      let data = create_update();
+      monitor.send(JSON.stringify(data));
+    }
+  }
 
   // *-----------------*
   // *    disconnect   *
   // *-----------------*
-  socket.on("disconnect", socket => {
-    try {
-      // Get the websockets IP Address
-      let ip = socket.handshake?.address;
+  socket.on("close", _socket => {
+    if (monitor) {
+      console.log("Monitor disconnected");
+      monitor = null;
+      return;
+    }
 
       // Get the player that disconnected
       let player = state.players[ip];
