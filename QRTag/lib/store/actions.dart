@@ -1,8 +1,5 @@
+import 'package:web_socket_channel/io.dart';
 /// Actions with Payload
-class Test {
-  final bool payload;
-  Test(this.payload);
-}
 
 class Location {
   final String payload;
@@ -22,4 +19,19 @@ class PlayerID {
 class Username {
   final String payload;
   Username(this.payload);
+}
+
+class PlayerNumbers {
+  final String payload;
+  PlayerNumbers(this.payload);
+}
+
+class WebSocketChannel {
+  final IOWebSocketChannel payload;
+  WebSocketChannel(this.payload);
+}
+
+class SocketReady {
+  final bool payload;
+  SocketReady(this.payload);
 }

@@ -6,9 +6,6 @@ AppState reducer(AppState prevState, dynamic action) {
   print("REDUCER");
   print(newState);
   switch (action.runtimeType) {
-    case Test:
-      newState.test = action.payload;
-      break;
     case Location:
       newState.location = action.payload;
       break;
@@ -20,6 +17,15 @@ AppState reducer(AppState prevState, dynamic action) {
       break;
     case Username:
       newState.username = action.payload;
+      break;
+    case PlayerNumbers:
+      newState.playerNumbers = action.payload;
+      break;
+    case WebSocketChannel:
+      newState.webSocketChannel = action.payload;
+      break;
+    case SocketReady:
+      newState.socketReady = action.payload;
       break;
     default: 
       print("Unmatched reducer AppState Action!!!!!");

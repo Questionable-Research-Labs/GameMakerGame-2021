@@ -38,6 +38,7 @@ dev_dependencies:
   flutter_redux: ^0.5.3 
   redux: ^3.0.0
   web_socket_channel:
+  tuple: ^1.0.3
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

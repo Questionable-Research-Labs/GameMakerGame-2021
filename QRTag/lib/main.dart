@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -10,6 +9,7 @@ import 'package:redux/redux.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/status.dart' as websocketSatus;
+import 'package:tuple/tuple.dart';
 
 import 'store/reducer.dart';
 import 'store/actions.dart';
@@ -17,7 +17,7 @@ import 'model/app_state.dart';
 
 import "qrview.dart";
 import "utill.dart";
-import "socket.dart";
+import "socket.dart" as socketManager;
 
 void main() {
   final Store<AppState> _store =
@@ -109,47 +109,12 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _textController = TextEditingController();
     WidgetsBinding.instance.addPostFrameCallback(onLayoutDone);
-
-    // final channel = IOWebSocketChannel.connect('ws://echo.websocket.org');
-    // channel.sink.add('Hello!');
-    // channel.stream.listen((message) {
-    //   channel.sink.add('received!');
-    //   print(message);
-    //   channel.sink.close(websocketSatus.goingAway);
-    // });
-
-    socket = IOWebSocketChannel.connect("ws://192.168.10.94:4003");
-    socket.stream.listen((message) {
-      dynamic data = jsonDecode(message);
-
-      if (data["message"] == "ready") {
-        socketReady = true;
-      }
+    StoreConnector<AppState, Store>(converter: (store) {
+      return store;
+      // return () => store.dispatch(Location("QRL"));
+    }, builder: (context, store) {
+      socketManager.initWS(context, store);
     });
-  }
-
-  Future joinGame(int id, String username, int team) async {
-    if (socketReady) {
-      socket.sink.add(jsonEncode(<String, dynamic>{
-        "message": "join",
-        "userID": id,
-        "username": username,
-        "team": team
-      }));
-
-      var result = await socket.stream.single;
-      var json = jsonDecode(result);
-
-      if (json["message"] == "joined") {
-        if (json["status"] == "accepted") {
-          return Future.value();
-        } else {
-          return Future.error(json["status"]);
-        }
-      } else {
-        return Future.error("The API be vibin");
-      }
-    }
   }
 
   Future<void> _getQRLocationInfo(BuildContext context, store) async {
@@ -221,7 +186,8 @@ class _HomePageState extends State<HomePage> {
             onTap: () {
               focusNode.unfocus();
             },
-            child: Container(
+            child: SingleChildScrollView(
+                child: Container(
               margin: const EdgeInsets.only(left: 20.0, right: 20.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -387,7 +353,12 @@ class _HomePageState extends State<HomePage> {
                                   hintText: 'Username Here'),
                               onSubmitted: (String value) async {
                                 store.dispatch(Username(value));
-                              });
+                              },
+															onChanged: (String value) async {
+                                store.dispatch(Username(value));
+                              },
+															);
+
                         }),
                       ],
                     ),
@@ -399,26 +370,45 @@ class _HomePageState extends State<HomePage> {
                     margin: const EdgeInsets.all(15.0),
                     padding: const EdgeInsets.all(20.0),
                     child: Center(
-                      child: StoreConnector<AppState, bool>(converter: (store) {
-                        final state = store.state;
-                        return (state.location != null &&
-                            state.playerID != null &&
-                            state.teamID != null &&
-                            state.username != null);
-                      }, builder: (context, checkIfReady) {
+                      child:
+                          StoreConnector<AppState, Store>(converter: (store) {
+                        return store;
+                      }, builder: (context, store) {
                         return SizedBox(
                             width: double.infinity, // <-- match_parent
                             child: RaisedButton(
-                                onPressed: checkIfReady ? () {print("Yes");} : null,
+                                onPressed: (store.state.location != null &&
+                                        store.state.playerID != null &&
+                                        store.state.teamID != null &&
+                                        store.state.username != null)
+                                    ? () {
+                                        socketManager.joinGame(context, store);
+                                      }
+                                    : null,
                                 child: Text("READY",
                                     style: TextStyle(
                                         fontWeight: FontWeight.bold))));
                       }),
                     ),
                   ),
+                  // *******************
+                  // Ready Players Count
+                  // *******************
+                  Container(
+                    margin: const EdgeInsets.all(15.0),
+                    padding: const EdgeInsets.all(20.0),
+                    child: Center(
+                        child: StoreConnector<AppState, Tuple2<int, int>>(
+                            converter: (store) {
+                      return store.state.playerNumbers;
+                    }, builder: (context, playerNumbers) {
+                      return Text(
+                          "People ready: ${playerNumbers.item1}/${playerNumbers.item2}"); // <playersReady,playersTotal>
+                    })),
+                  ),
                 ],
               ),
-            )));
+            ))));
   }
 
   @override
