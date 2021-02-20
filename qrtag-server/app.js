@@ -68,6 +68,21 @@ io.on("connection", (socket, req) => {
         // Create a new Player object
         let newPlayer = new Player(json["playerID"], json["username"], socket);
 
+        if (ip in state.lookup.keys() ) {
+          socket.send('{"message": "joined", "state": "Device already connected"}');
+          break;
+        }
+
+        for (let c of state.lookup) {
+          if (c.userID === json["playerID"]) {
+            socket.send('{"message": "joined", "state": "PlayerID already taken"}');
+            return;
+          } else if (c.username === json["username"]) {
+            socket.send('{"message": "joined", "state": "Username already taken"}');
+            return;
+          }
+        }
+
         // Add the player id to team lookup table
         state.lookup[newPlayer.playerID] = team;
 
@@ -120,15 +135,13 @@ io.on("connection", (socket, req) => {
       // Get the player that disconnected
       let player = state.players[ip];
 
-      // Delete all the user information and remove from lookup table
-      state.players.delete(ip);
-      state.lookup.delete(ip);
+      if (player) {
+        // Delete all the user information and remove from lookup table
+        state.players.delete(ip);
+        state.lookup.delete(ip);
 
-      console.log("Player ", ip, ":", player.username, "disconnected");
-    } catch (e) {
-      console.log("Error on disconect: ",e)
-    }
-    
+        console.log("Player ", ip, ":", player.username, "disconnected");
+      }
   });
 });
 
