@@ -1,5 +1,3 @@
-import 'dart:js';
-
 import 'package:QRTag/gameview.dart';
 import 'package:QRTag/model/app_state.dart';
 import 'package:QRTag/qrcode.dart';
