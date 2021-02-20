@@ -89,7 +89,7 @@ io.on("connection", (socket, req) => {
           if (c.playerID === json["playerID"]) {
             socket.send('{"message": "joined", "state": "PlayerID already taken"}');
             return;
-          } 
+          }
         }
 
         // Check that the teams has a score
