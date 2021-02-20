@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -37,7 +38,9 @@ class MainPage extends StatefulWidget {
 // Root of aplication
 class QRTag extends State<MainPage> {
   final Store<AppState> store;
+
   QRTag(this.store);
+
   @override
   Widget build(BuildContext context) {
     return StoreProvider<AppState>(
@@ -95,8 +98,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   dynamic _permissionStatus;
-  Socket channel;
-  Socket socket;
+  IOWebSocketChannel socket;
+  bool socketReady = false;
 
   @override
   void initState() {
@@ -110,6 +113,39 @@ class _HomePageState extends State<HomePage> {
     //   print(message);
     //   channel.sink.close(websocketSatus.goingAway);
     // });
+
+    socket = IOWebSocketChannel.connect("ws://192.168.10.94:4003");
+    socket.stream.listen((message) {
+      dynamic data = jsonDecode(message);
+
+      if (data["message"] == "ready") {
+        socketReady = true;
+      }
+    });
+  }
+
+  Future joinGame(int id, String username, int team) async {
+    if (socketReady) {
+      socket.sink.add(jsonEncode(<String, dynamic>{
+        "message": "join",
+        "userID": id,
+        "username": username,
+        "team": team
+      }));
+
+      var result = await socket.stream.single;
+      var json = jsonDecode(result);
+
+      if (json["message"] == "joined") {
+        if (json["status"] == "accepted") {
+          return Future.value();
+        } else {
+          return Future.error(json["status"]);
+        }
+      } else {
+        return Future.error("The API be vibin");
+      }
+    }
   }
 
   
@@ -325,6 +361,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
+    socket.sink.close();
     super.dispose();
   }
 }
