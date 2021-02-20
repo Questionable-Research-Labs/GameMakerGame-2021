@@ -7,9 +7,10 @@ import 'package:flutter/foundation.dart';
 
 import 'package:permission_handler/permission_handler.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
-import 'package:socket_io_client/socket_io_client.dart';
 import 'package:redux/redux.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/status.dart' as websocketSatus;
 
 import 'store/reducer.dart';
 import 'model/app_state.dart';
@@ -104,20 +105,14 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback(onLayoutDone);
 
-      Socket socket = io("ws://localhost:4003", <String, dynamic>{
-        'transports': ['websocket'],
-      });
+    final channel = IOWebSocketChannel.connect('ws://echo.websocket.org');
+    channel.sink.add('Hello!');
+    channel.stream.listen((message) {
+      channel.sink.add('received!');
+      print(message);
+      channel.sink.close(websocketSatus.goingAway);
+    });
 
-      socket.on("connect", (_) => print('Connected'));
-      socket.on("disconnect", (_) => print('Disconnected'));
-
-      socket.connect();
-      while (!socket.connected) {
-        
-      }
-      print("YES");
-
-      socket.disconnect();
   }
 
   Future<void> _getLocationInfo(BuildContext context) async {
