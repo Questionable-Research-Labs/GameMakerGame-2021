@@ -39,7 +39,8 @@ export default class Player {
       player.socket.send(JSON.stringify({
         message: "base move",
         team: this.team,
-        username: this.username
+        username: this.username,
+        playerID: this.playerID
       }));
     }
   }
