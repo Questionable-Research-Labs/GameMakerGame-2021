@@ -23,14 +23,19 @@
         team: 0
       };
 
-      const socket = io("ws://192.168.10.94:4003").connect();
+      const socket = io("http://192.168.10.94:4003").connect();
 
       socket.on('ready', () => {
         console.log("Connection is ready");
-        socket.emit('monitor');
+        socket.emit("join", JSON.stringify({
+          username: "TestUser",
+          userID: 0,
+          team: 0
+        }))
       });
     </script>
 </head>
 <body>
+<div id="info" />
 </body>
 </html>

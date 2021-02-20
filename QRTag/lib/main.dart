@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -6,10 +7,21 @@ import 'package:flutter/foundation.dart';
 
 import 'package:permission_handler/permission_handler.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:socket_io_client/socket_io_client.dart';
 
+import 'config.dart';
 import "qrview.dart";
 
 void main() {
+  Socket socket = io("ws://192.168.10.94:4003", <String, dynamic>{
+    'transports': ['websocket'],
+  });
+
+  socket.on("connect", (_) => print('Connected'));
+  socket.on("disconnect", (_) => print('Disconnected'));
+
+  socket.disconnect();
+  
   runApp(new MainPage());
 }
 
@@ -20,6 +32,7 @@ class MainPage extends StatefulWidget {
   const MainPage({
     Key key,
   }) : super(key: key);
+
   QRTag createState() => QRTag();
 }
 
@@ -80,6 +93,14 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   dynamic _permissionStatus;
+  Socket channel;
+  Socket socket;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback(onLayoutDone);
+  }
 
   Future<void> _getLocationInfo(BuildContext context) async {
     final result = await Navigator.push(
@@ -89,12 +110,6 @@ class _HomePageState extends State<HomePage> {
     );
 
     setState(() {});
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback(onLayoutDone);
   }
 
   void onLayoutDone(Duration timeStamp) async {
@@ -137,7 +152,8 @@ class _HomePageState extends State<HomePage> {
                             Text("Location:"),
                             ButtonBar(
                               children: [
-                                RaisedButton(onPressed: null, child: Text("Clear")),
+                                RaisedButton(
+                                    onPressed: null, child: Text("Clear")),
                                 RaisedButton(
                                   child: Text("Scan Now"),
                                   onPressed: () {
@@ -152,5 +168,11 @@ class _HomePageState extends State<HomePage> {
                     ],
                   ),
                 )));
+  }
+
+  @override
+  void dispose() {
+    channel.disconnect();
+    super.dispose();
   }
 }

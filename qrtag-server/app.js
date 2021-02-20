@@ -10,9 +10,11 @@ let state = new State();
 // Create all the state stuff
 const app = express();
 const http = new Server(app);
-const io = new socketIO(http);
-let monitor;
-
+const io = new socketIO(http, {
+  cors: {
+    origin: '*',
+  }
+});
 const port = process.env.PORT | 4003;
 
 // Serve the static files
@@ -25,23 +27,15 @@ io.on("connection", (socket) => {
   console.log("New connection from client");
   socket.emit('ready');
 
-
-
-  // *-----------------*
-  // * monitor connect *
-  // *-----------------*
-  socket.on('monitor', socket => {
-    monitor = socket;
-
-    console.log("Monitor connected");
-  })
-
   // *-----------------*
   // *      join       *
   // *-----------------*
+
   socket.on('join', (data) => {
     // Get the users id
-    let ip = socket.ipAddress;
+    let ip = socket.handshake.address;
+
+    console.log(ip);
 
     // Deserialize the request
     let playerData = JSON.parse(data);
@@ -66,26 +60,15 @@ io.on("connection", (socket) => {
     state.players[ip] = newPlayer;
 
     // Tell the client that they successfuly joined
-    socket.send('joined');
-
-    // The the monitor about the updated state
-    if (monitor) {
-      monitor.send('update', JSON.stringify(state));
-    }
+    socket.emit('joined');
   });
 
   // *-----------------*
   // *    disconnect   *
   // *-----------------*
   socket.on("disconnect", socket => {
-    // Handle the monitor disconnecting differently
-    if (socket === monitor) {
-      monitor = undefined;
-      return;
-    }
-
     // Get the websockets IP Address
-    let ip = socket.ipAddress;
+    let ip = socket.handshake?.address;
 
     // Get the player that disconnected
     let player = state.players[ip];
@@ -99,6 +82,6 @@ io.on("connection", (socket) => {
 });
 
 // Start the server
-http.listen(port, () => {
+http.listen(port, "0.0.0.0", () => {
   console.log(`"listening on http://localhost:${port}"`);
 });
