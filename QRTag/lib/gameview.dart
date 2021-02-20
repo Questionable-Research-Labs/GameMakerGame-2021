@@ -12,11 +12,13 @@ import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'qrview.dart';
 
 Future<void> handleQRCode(QRCode qrCode) async {
-  // switch (qrCode.type) {
-  //   case "player":
+  switch (qrCode.type) {
+    case "player":
 
-  //     break;
-  // }
+      break;
+    default:
+    
+  }
 }
 
 class GameView extends StatefulWidget {
