@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 
@@ -8,11 +6,10 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:redux/redux.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:web_socket_channel/io.dart';
-import 'package:web_socket_channel/status.dart' as websocketSatus;
 import 'package:tuple/tuple.dart';
 
-import 'store/reducer.dart';
 import 'store/actions.dart';
+import 'store/store.dart' as appstore;
 import 'model/app_state.dart';
 
 import "qrview.dart";
@@ -20,9 +17,7 @@ import "utill.dart";
 import "socket.dart" as socketManager;
 
 void main() {
-  final Store<AppState> _store =
-      Store<AppState>(reducer, initialState: AppState());
-  runApp(new MainPage(store: _store));
+  runApp(new MainPage(store: appstore.store));
 }
 
 void logError(String code, String message) =>
@@ -98,7 +93,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  dynamic _permissionStatus;
   IOWebSocketChannel socket;
   bool socketReady = false;
   TextEditingController _textController;
@@ -108,13 +102,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _textController = TextEditingController();
-    WidgetsBinding.instance.addPostFrameCallback(onLayoutDone);
-    StoreConnector<AppState, Store>(converter: (store) {
-      return store;
-      // return () => store.dispatch(Location("QRL"));
-    }, builder: (context, store) {
-      socketManager.initWS(context, store);
-    });
+    socketManager.initWS();
   }
 
   Future<void> _getQRLocationInfo(BuildContext context, store) async {
@@ -161,11 +149,6 @@ class _HomePageState extends State<HomePage> {
     } else {
       await genWrongQRCodeDialog(context, "Personal Player ID QR Code");
     }
-  }
-
-  void onLayoutDone(Duration timeStamp) async {
-    _permissionStatus = await Permission.camera.status;
-    setState(() {});
   }
 
   @override
@@ -254,7 +237,7 @@ class _HomePageState extends State<HomePage> {
                         StoreConnector<AppState, AppState>(
                             converter: (store) => store.state,
                             builder: (context, store) {
-                              return Text(store.teamID.toString() ?? "");
+                              return Text((store.teamID ?? "").toString());
                             }),
                         ButtonBar(
                           children: [
@@ -299,7 +282,7 @@ class _HomePageState extends State<HomePage> {
                         StoreConnector<AppState, AppState>(
                             converter: (store) => store.state,
                             builder: (context, store) {
-                              return Text(store.playerID.toString() ?? "");
+                              return Text((store.playerID ?? "").toString());
                             }),
                         ButtonBar(
                           children: [
@@ -382,7 +365,7 @@ class _HomePageState extends State<HomePage> {
                                         store.state.teamID != null &&
                                         store.state.username != null)
                                     ? () {
-                                        socketManager.joinGame(context, store);
+                                        socketManager.joinGame();
                                       }
                                     : null,
                                 child: Text("READY",
