@@ -8,36 +8,39 @@ import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:socket_io_client/socket_io_client.dart';
+import 'package:redux/redux.dart';
+import 'package:flutter_redux/flutter_redux.dart';
 
-import 'config.dart';
+import 'store/reducer.dart';
+import 'model/app_state.dart';
+
 import "qrview.dart";
 
 void main() {
-  Socket socket = io("ws://192.168.10.94:4003", <String, dynamic>{
-    'transports': ['websocket'],
-  });
 
-  socket.on("connect", (_) => print('Connected'));
-  socket.on("disconnect", (_) => print('Disconnected'));
-
-  socket.disconnect();
   
-  runApp(new MainPage());
+  final Store<AppState> _store = Store<AppState>(reducer, initialState: AppState(test: false));
+  runApp(new MainPage(store: _store));
 }
 
 void logError(String code, String message) =>
     print('Error: $code\nError Message: $message');
 
-class MainPage extends StatefulWidget {
+class MainPage extends StatefulWidget { 
+  final Store<AppState> store; 
+
   const MainPage({
     Key key,
+    this.store
   }) : super(key: key);
-
-  QRTag createState() => QRTag();
+  
+  QRTag createState() => QRTag(store);
 }
 
 // Root of aplication
 class QRTag extends State<MainPage> {
+  final Store<AppState> store; 
+  QRTag(this.store);
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -100,6 +103,21 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback(onLayoutDone);
+
+      Socket socket = io("ws://localhost:4003", <String, dynamic>{
+        'transports': ['websocket'],
+      });
+
+      socket.on("connect", (_) => print('Connected'));
+      socket.on("disconnect", (_) => print('Disconnected'));
+
+      socket.connect();
+      while (!socket.connected) {
+        
+      }
+      print("YES");
+
+      socket.disconnect();
   }
 
   Future<void> _getLocationInfo(BuildContext context) async {
@@ -172,7 +190,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
-    channel.disconnect();
     super.dispose();
   }
 }

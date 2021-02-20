@@ -67,17 +67,22 @@ io.on("connection", (socket) => {
   // *    disconnect   *
   // *-----------------*
   socket.on("disconnect", socket => {
-    // Get the websockets IP Address
-    let ip = socket.handshake?.address;
+    try {
+      // Get the websockets IP Address
+      let ip = socket.handshake?.address;
 
-    // Get the player that disconnected
-    let player = state.players[ip];
+      // Get the player that disconnected
+      let player = state.players[ip];
 
-    // Delete all the user information and remove from lookup table
-    state.players.delete(ip);
-    state.lookup.delete(ip);
+      // Delete all the user information and remove from lookup table
+      state.players.delete(ip);
+      state.lookup.delete(ip);
 
-    console.log("Player ", ip, ":", player.username, "disconnected");
+      console.log("Player ", ip, ":", player.username, "disconnected");
+    } catch (e) {
+      console.log("Error on disconect: ",e)
+    }
+    
   });
 });
 
