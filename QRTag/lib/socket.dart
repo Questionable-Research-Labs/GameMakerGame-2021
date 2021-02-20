@@ -7,7 +7,7 @@ import 'package:QRTag/store/actions.dart';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/io.dart';
 import 'dart:convert';
-
+import 'main.dart';
 
 import 'utill.dart';
 import 'store/store.dart' as appstore;
@@ -95,11 +95,8 @@ void handleMessage(Map<String, dynamic> data) {
       break;
 
     case "start game":
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => GameView(title: "GAME ON!")),
-      );
+      navigatorKey.currentState.pushNamed('/game');
+
 
       break;
       

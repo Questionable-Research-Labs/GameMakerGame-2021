@@ -15,6 +15,9 @@ import 'model/app_state.dart';
 import "qrview.dart";
 import "utill.dart";
 import "socket.dart" as socketManager;
+import 'gameview.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = new GlobalKey<NavigatorState>();
 
 void main() {
   runApp(new MainPage(store: appstore.store));
@@ -34,6 +37,7 @@ class MainPage extends StatefulWidget {
 // Root of aplication
 class QRTag extends State<MainPage> {
   final Store<AppState> store;
+  
 
   QRTag(this.store);
 
@@ -43,6 +47,7 @@ class QRTag extends State<MainPage> {
         store: store,
         child: MaterialApp(
           title: 'QR Tag',
+          navigatorKey: navigatorKey,
           theme: ThemeData(
             // This is the theme of your application.
             //
@@ -69,7 +74,13 @@ class QRTag extends State<MainPage> {
             // closer together (more dense) than on mobile platforms.
             visualDensity: VisualDensity.adaptivePlatformDensity,
           ),
-          home: HomePage(title: 'QRTag'),
+          initialRoute: '/',
+          routes: {
+            // When navigating to the "/" route, build the FirstScreen widget.
+            '/': (context) => HomePage(title: 'QRTag'),
+            // When navigating to the "/second" route, build the SecondScreen widget.
+            '/game': (context) => GameView(title: 'QRTag'),
+          },
         ));
   }
 }
