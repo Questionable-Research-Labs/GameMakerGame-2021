@@ -7,7 +7,7 @@
             content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
     />
     <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
-    <title>QRTag monitor</title>
+    <title>Document</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"
             integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg=="
             crossorigin="anonymous"></script>
@@ -24,18 +24,25 @@
         switch (json['message']) {
           case "ready":
             console.log("Received ready");
-            socket.send('{"message":"join","playerID":0,"username":"Hentai Master","team":0}');
+            socket.send(JSON.stringify({message: "monitor"}));
             break;
-          case "joined":
-            console.log("Joined my bois");
-            socket.close();
+          case "monitor connect":
+            if (json["status"] === "accepted") {
+              $("#status").html('Connected to server')
+            } else {
+              $("#status").html('Monitor all ready connected, fuck you')
+            }
             break;
+          case "update":
+            $("#info").html(json)
         }
       };
 
     </script>
 </head>
 <body>
-<div id="info"/>
+<p id="status"></p>
+<p id="info"></p>
 </body>
 </html>
+
