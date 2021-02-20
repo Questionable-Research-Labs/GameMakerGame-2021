@@ -1,4 +1,5 @@
 import 'package:QRTag/model/app_state.dart';
+import 'package:QRTag/qrcode.dart';
 import 'package:QRTag/store/actions.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:web_socket_channel/io.dart';
@@ -38,6 +39,13 @@ Future joinGame() async {
       return Future.error("The API be vibin");
     }
 }
+
+Future scanPlayer(QRCode qrCode) async {
+  print(qrCode.toString());
+}
+Future scanBase(QRCode qrCode) async {
+  print(qrCode.toString());
+} 
 
 Future initWS() async {
   final store = appstore.store;
