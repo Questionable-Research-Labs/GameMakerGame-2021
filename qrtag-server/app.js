@@ -23,7 +23,7 @@ app.use(cors());
 const create_update = () => {
   return {
     players: [...state.players.keys()].map(key => {
-      let player = state.players[key];
+      let player = state.players.get(key);
       return {
         ipAddress: key,
         id: player.playerID,
@@ -76,19 +76,20 @@ io.on("connection", (socket, req) => {
         // Create a new Player object
         let newPlayer = new Player(json["playerID"], json["username"], team, socket);
 
-        if (ip in state.players.keys()) {
+        console.log([...state.players.keys()]);
+
+        if (ip in [...state.players.keys()]) {
           socket.send('{"message": "joined", "state": "Device already connected"}');
           break;
         }
 
         for (let c of state.players) {
+          c = c[1];
+          console.log(c.playerID, json["playerID"]);
           if (c.playerID === json["playerID"]) {
             socket.send('{"message": "joined", "state": "PlayerID already taken"}');
             return;
-          } else if (c.username === json["username"]) {
-            socket.send('{"message": "joined", "state": "Username already taken"}');
-            return;
-          }
+          } 
         }
 
         // Check that the teams has a score
@@ -107,7 +108,7 @@ io.on("connection", (socket, req) => {
         console.log("Player joining", json);
 
         // Save the information
-        state.players[ip] = newPlayer;
+        state.players.set(ip, newPlayer);
 
         // Tell the client that they successfully joined
         socket.send('{"message": "joined", "state": "accepted"}');
@@ -115,9 +116,13 @@ io.on("connection", (socket, req) => {
 
       case 'scan':
         let type = json["type"];
-        let scanner = state.players[ip];
+        let scanner = state.players.get(ip);
 
         if (type === "player") {
+          if (!scanner.active) {
+            scanner.socket.send("{'message': 'not active'}");
+            return;
+          }
           let otherPlayer = _.find(state.players, {playerID: json["id"]});
 
           if (!otherPlayer) {
@@ -136,13 +141,16 @@ io.on("connection", (socket, req) => {
               otherPlayer.removeBase();
             }
 
-            state.players[otherPlayer.getIndex(state)].deactivate();
+            state.players.get(otherPlayer.getIndex(state)).deactivate();
           }
         } else if (type === "base") {
           let base = json["id"];
 
           if (base === scanner.team) {
-            state.players[ip].activate();
+            if (scanner.hasBase(state)) {
+              scanner.giveBase(state, base);
+            }
+            state.players.get(ip).activate();
           } else {
             if (state.getBaseLocation(base) === "home" && !scanner.hasBase(state)) {
               scanner.giveBase(state, base);
@@ -157,7 +165,7 @@ io.on("connection", (socket, req) => {
         break;
 
       case 'ready':
-        state.players[ip].ready = true;
+        state.players.get(ip).ready = true;
 
         let unreadied = _.filter(state.players, {ready: false});
         if (unreadied.length < 1) {
@@ -204,7 +212,6 @@ io.on("connection", (socket, req) => {
     if (player) {
       // Delete all the user information and remove from lookup table
       state.players.delete(ip);
-      state.lookup.delete(ip);
 
       console.log("Player ", ip, ":", player.username, "disconnected");
     }

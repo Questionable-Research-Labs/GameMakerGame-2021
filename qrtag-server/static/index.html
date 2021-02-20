@@ -15,11 +15,9 @@
       const socket = new WebSocket("ws://192.168.10.94:4003");
 
       socket.onmessage = (event) => {
-        console.log(event.data);
-
         const json = JSON.parse(event.data);
 
-        console.table(json);
+        console.log(json);
 
         switch (json['message']) {
           case "ready":
@@ -28,7 +26,7 @@
             break;
           case "joined":
             console.log("Joined my bois");
-            socket.close();
+            // socket.close();
             break;
         }
       };

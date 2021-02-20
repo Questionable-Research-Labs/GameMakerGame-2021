@@ -15,11 +15,9 @@
       const socket = new WebSocket("ws://localhost:4003");
 
       socket.onmessage = (event) => {
-        console.log(event.data);
-
         const json = JSON.parse(event.data);
 
-        console.table(json);
+        console.log(json);
 
         switch (json['message']) {
           case "ready":
@@ -34,7 +32,13 @@
             }
             break;
           case "update":
-            $("#info").html(json)
+            $("#info").html(
+`<h1>Players</h1>
+<p>${JSON.stringify(json["players"], undefined, 2).replaceAll("\n", "<br />").replaceAll("  ", "\t")}</p>
+<h1>Team Scores</h1>
+<p>${JSON.stringify(json["teamScores"], undefined, 2).replaceAll("\n", "<br />").replaceAll("  ", "\t")}</p>
+<h1>Base Locations</h1>
+<p>${JSON.stringify(json["baseLocations"], undefined, 2).replaceAll("\n", "<br />").replaceAll("  ", "\t")}</p>`);
         }
       };
 
