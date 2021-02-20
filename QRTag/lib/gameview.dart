@@ -16,6 +16,8 @@ Future<void> handleQRCode(QRCode qrCode) async {
     case "player":
 
       break;
+    case "base":
+      break;
     default:
     
   }
