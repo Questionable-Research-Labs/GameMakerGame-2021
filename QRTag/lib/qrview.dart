@@ -41,16 +41,6 @@ class _QRPageState extends State<QRPage> {
     controller.resumeCamera();
   }
 
-  Future<void> getLocationInfo() async {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-    });
-  }
-
   @override
   void initState() {
     super.initState();
@@ -92,6 +82,7 @@ class _QRPageState extends State<QRPage> {
       print(scanData.format);
       print(scanData.code);
       Navigator.pop(context,scanData.code);
+      dispose();
     });
   }
 
