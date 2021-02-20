@@ -84,11 +84,9 @@ class _HomePageState extends State<HomePage> {
   Future<void> _getLocationInfo(BuildContext context) async {
     final result = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => QRPage(title: "QR Tag")),
+      MaterialPageRoute(
+          builder: (context) => QRPage(title: "Scan the location QR code")),
     );
-    Scaffold.of(context)
-      ..removeCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text("$result")));
 
     setState(() {});
   }
@@ -130,30 +128,29 @@ class _HomePageState extends State<HomePage> {
                     children: <Widget>[
                       Container(
                         margin: const EdgeInsets.all(15.0),
-                        padding: const EdgeInsets.all(5.0),
+                        padding: const EdgeInsets.only(left: 20.0, right: 20.0),
                         decoration: BoxDecoration(
                             border: Border.all(color: Colors.blueAccent)),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text("Location:"),
-                            TextButton(
-                              child: Text("Scan Now"),
-                              onPressed: () {
-                                _getLocationInfo(context);
-                              },
-                            ),
+                            ButtonBar(
+                              children: [
+                                RaisedButton(onPressed: null, child: Text("Clear")),
+                                RaisedButton(
+                                  child: Text("Scan Now"),
+                                  onPressed: () {
+                                    _getLocationInfo(context);
+                                  },
+                                ),
+                              ],
+                            )
                           ],
                         ),
-                      ),
-                      Text(
-                        // '$_permissionStatus',
-                        '$_permissionStatus',
-                        style: Theme.of(context).textTheme.headline5,
-                      ),
+                      )
                     ],
                   ),
-                )
-            ));
+                )));
   }
 }

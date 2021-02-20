@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -82,9 +83,15 @@ class _QRPageState extends State<QRPage> {
       print(scanData.format);
       print(scanData.code);
       
-      Navigator.pop(context,scanData.code);
-      controller?.dispose();
-      
+      // Check if valid QR code
+      try {
+        var decodedJSON = jsonDecode(scanData.code) as Map<String, dynamic>;
+        Navigator.pop(context,decodedJSON);
+        controller?.dispose();
+      } on FormatException catch (e) {
+        print('The QR Code is not valid JSON');
+        print(e);
+      }
     });
   }
 
