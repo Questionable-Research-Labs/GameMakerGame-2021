@@ -5,6 +5,7 @@ class AppState {
   String location;
   int teamID;
   int playerID;
+  String username;
 
   AppState({this.test = false});
 
@@ -13,5 +14,6 @@ class AppState {
     location = another.location;
     teamID = another.teamID;
     playerID = another.playerID;
+    username = another.username;
   }
 }

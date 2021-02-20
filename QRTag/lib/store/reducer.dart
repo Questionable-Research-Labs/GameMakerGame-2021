@@ -18,6 +18,9 @@ AppState reducer(AppState prevState, dynamic action) {
     case PlayerID:
       newState.playerID = action.payload;
       break;
+    case Username:
+      newState.username = action.payload;
+      break;
     default: 
       print("Unmatched reducer AppState Action!!!!!");
   }

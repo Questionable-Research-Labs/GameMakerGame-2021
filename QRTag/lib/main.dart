@@ -17,6 +17,7 @@ import 'model/app_state.dart';
 
 import "qrview.dart";
 import "utill.dart";
+import "socket.dart";
 
 void main() {
   final Store<AppState> _store =
@@ -100,10 +101,13 @@ class _HomePageState extends State<HomePage> {
   dynamic _permissionStatus;
   IOWebSocketChannel socket;
   bool socketReady = false;
+  TextEditingController _textController;
+  final focusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
+    _textController = TextEditingController();
     WidgetsBinding.instance.addPostFrameCallback(onLayoutDone);
 
     // final channel = IOWebSocketChannel.connect('ws://echo.websocket.org');
@@ -148,8 +152,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  
-
   Future<void> _getQRLocationInfo(BuildContext context, store) async {
     final result = await Navigator.push(
       context,
@@ -158,13 +160,12 @@ class _HomePageState extends State<HomePage> {
     );
     print(result);
     if (result["type"] == "location") {
-      store.dispatch(
-        Location(result["id"])
-      );
+      store.dispatch(Location(result["id"]));
     } else {
-      await genWrongQRCodeDialog(context,"Location QR Code");
+      await genWrongQRCodeDialog(context, "Location QR Code");
     }
   }
+
   Future<void> _getQRTeamID(BuildContext context, store) async {
     final result = await Navigator.push(
       context,
@@ -172,27 +173,28 @@ class _HomePageState extends State<HomePage> {
           builder: (context) => QRPage(title: "Scan your Team's flag QR code")),
     );
     print(result);
-    if (result["type"] == "base" && isNumeric(result["id"])) {
-      store.dispatch(
-        TeamID(int.parse(result["id"]))
-      );
+    if (result == null) {
+      return;
+    }
+    if (result["type"] == "base" && isNumeric(result["id"].toString())) {
+      store.dispatch(TeamID(int.parse(result["id"].toString())));
     } else {
-      await genWrongQRCodeDialog(context,"Team Flag QR Code");
+      await genWrongQRCodeDialog(context, "Team Flag QR Code");
     }
   }
+
   Future<void> _getQRPlayerID(BuildContext context, store) async {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-          builder: (context) => QRPage(title: "Scan your personal Player ID QR code")),
+          builder: (context) =>
+              QRPage(title: "Scan your personal Player ID QR code")),
     );
     print(result);
-    if (result["type"] == "player" && isNumeric(result["id"])) {
-      store.dispatch(
-        PlayerID(result["id"])
-      );
+    if (result["type"] == "player" && isNumeric(result["id"].toString())) {
+      store.dispatch(PlayerID(int.parse(result["id"].toString())));
     } else {
-      await genWrongQRCodeDialog(context,"Personal Player ID QR Code");
+      await genWrongQRCodeDialog(context, "Personal Player ID QR Code");
     }
   }
 
@@ -215,152 +217,213 @@ class _HomePageState extends State<HomePage> {
           // the App.build method, and use it to set our appbar title.
           title: Text(widget.title),
         ),
-        body: Container(
-          margin: const EdgeInsets.only(left: 20.0, right: 20.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: <Widget>[
-              // ****************
-              // Location Scanner
-              // ****************
-              Container(
-                margin: const EdgeInsets.all(15.0),
-                padding: const EdgeInsets.only(left: 20.0, right: 20.0),
-                decoration:
-                    BoxDecoration(border: Border.all(color: Colors.blueAccent)),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text("Location:",style: TextStyle(fontWeight: FontWeight.bold)),
-                    StoreConnector<AppState, AppState>(
-                        converter: (store) => store.state,
-                        builder: (context, store) {
-                          return Text(store.location ?? "");
-                        }),
-                    ButtonBar(
+        body: new GestureDetector(
+            onTap: () {
+              focusNode.unfocus();
+            },
+            child: Container(
+              margin: const EdgeInsets.only(left: 20.0, right: 20.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[
+                  // ****************
+                  // Location Scanner
+                  // ****************
+                  Container(
+                    margin: const EdgeInsets.all(15.0),
+                    padding: const EdgeInsets.only(left: 20.0, right: 20.0),
+                    decoration: BoxDecoration(
+                        border: Border.all(color: Colors.blueAccent)),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        StoreConnector<AppState, Store>(
-                            converter: (store) {
+                        Text("Location:",
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        StoreConnector<AppState, AppState>(
+                            converter: (store) => store.state,
+                            builder: (context, store) {
+                              return Text(store.location ?? "");
+                            }),
+                        ButtonBar(
+                          children: [
+                            StoreConnector<AppState, Store>(converter: (store) {
                               return store;
                               // return () => store.dispatch(Location("QRL"));
-                            },
-                            builder: (context, store) {
+                            }, builder: (context, store) {
                               return RaisedButton(
-                                onPressed: store.state.location!=null ? () {store.dispatch(Location(null));} : null,
-                                child: Text("Clear")
-                                );
+                                  onPressed: store.state.location != null
+                                      ? () {
+                                          store.dispatch(Location(null));
+                                        }
+                                      : null,
+                                  child: Text("Clear"));
                             }),
-                        StoreConnector<AppState, VoidCallback>(
-                            converter: (store) {
+                            StoreConnector<AppState, VoidCallback>(
+                                converter: (store) {
                               return () => _getQRLocationInfo(context, store);
-                            },
-                            builder: (context, callback) {
+                            }, builder: (context, callback) {
                               return RaisedButton(
                                 child: Text("Scan Now"),
                                 onPressed: callback,
                               );
                             }),
+                          ],
+                        )
                       ],
-                    )
-                  ],
-                ),
-              ),
-              // ****************
-              // Team Scanner
-              // ****************
-              Container(
-                margin: const EdgeInsets.all(15.0),
-                padding: const EdgeInsets.only(left: 20.0, right: 20.0),
-                decoration:
-                    BoxDecoration(border: Border.all(color: Colors.blueAccent)),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text("Team:",style: TextStyle(fontWeight: FontWeight.bold)),
-                    StoreConnector<AppState, AppState>(
-                        converter: (store) => store.state,
-                        builder: (context, store) {
-                          return Text(store.teamID ?? "");
-                        }),
-                    ButtonBar(
+                    ),
+                  ),
+                  // ****************
+                  // Team Scanner
+                  // ****************
+                  Container(
+                    margin: const EdgeInsets.all(15.0),
+                    padding: const EdgeInsets.only(left: 20.0, right: 20.0),
+                    decoration: BoxDecoration(
+                        border: Border.all(color: Colors.blueAccent)),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        StoreConnector<AppState, Store>(
-                            converter: (store) {
-                              return store;
-                            },
+                        Text("Team:",
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        StoreConnector<AppState, AppState>(
+                            converter: (store) => store.state,
                             builder: (context, store) {
-                              return RaisedButton(
-                                onPressed: store.state.teamID!=null ? () {store.dispatch(TeamID(null));} : null,
-                                child: Text("Clear")
-                                );
+                              return Text(store.teamID.toString() ?? "");
                             }),
-                        StoreConnector<AppState, VoidCallback>(
-                            converter: (store) {
+                        ButtonBar(
+                          children: [
+                            StoreConnector<AppState, Store>(converter: (store) {
+                              return store;
+                            }, builder: (context, store) {
+                              return RaisedButton(
+                                  onPressed: store.state.teamID != null
+                                      ? () {
+                                          store.dispatch(TeamID(null));
+                                        }
+                                      : null,
+                                  child: Text("Clear"));
+                            }),
+                            StoreConnector<AppState, VoidCallback>(
+                                converter: (store) {
                               return () => _getQRTeamID(context, store);
-                            },
-                            builder: (context, callback) {
+                            }, builder: (context, callback) {
                               return RaisedButton(
                                 child: Text("Scan Now"),
                                 onPressed: callback,
                               );
                             }),
+                          ],
+                        )
                       ],
-                    )
-                  ],
-                ),
-              ),
-              // ****************
-              // Player ID Scanner
-              // ****************
-              Container(
-                margin: const EdgeInsets.all(15.0),
-                padding: const EdgeInsets.only(left: 20.0, right: 20.0),
-                decoration:
-                    BoxDecoration(border: Border.all(color: Colors.blueAccent)),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text("Player ID:",style: TextStyle(fontWeight: FontWeight.bold)),
-                    StoreConnector<AppState, AppState>(
-                        converter: (store) => store.state,
-                        builder: (context, store) {
-                          return Text(store.playerID ?? "");
-                        }),
-                    ButtonBar(
+                    ),
+                  ),
+                  // ****************
+                  // Player ID Scanner
+                  // ****************
+                  Container(
+                    margin: const EdgeInsets.all(15.0),
+                    padding: const EdgeInsets.only(left: 20.0, right: 20.0),
+                    decoration: BoxDecoration(
+                        border: Border.all(color: Colors.blueAccent)),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        StoreConnector<AppState, Store>(
-                            converter: (store) {
-                              return store;
-                            },
+                        Text("Player ID:",
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        StoreConnector<AppState, AppState>(
+                            converter: (store) => store.state,
                             builder: (context, store) {
-                              return RaisedButton(
-                                onPressed: store.state.playerID!=null ? () {store.dispatch(PlayerID(null));} : null,
-                                child: Text("Clear")
-                                );
+                              return Text(store.playerID.toString() ?? "");
                             }),
-                        StoreConnector<AppState, VoidCallback>(
-                            converter: (store) {
+                        ButtonBar(
+                          children: [
+                            StoreConnector<AppState, Store>(converter: (store) {
+                              return store;
+                            }, builder: (context, store) {
+                              return RaisedButton(
+                                  onPressed: store.state.playerID != null
+                                      ? () {
+                                          store.dispatch(PlayerID(null));
+                                        }
+                                      : null,
+                                  child: Text("Clear"));
+                            }),
+                            StoreConnector<AppState, VoidCallback>(
+                                converter: (store) {
                               return () => _getQRPlayerID(context, store);
-                            },
-                            builder: (context, callback) {
+                            }, builder: (context, callback) {
                               return RaisedButton(
                                 child: Text("Scan Now"),
                                 onPressed: callback,
                               );
                             }),
+                          ],
+                        )
                       ],
-                    )
-                  ],
-                ),
+                    ),
+                  ),
+                  // ****************
+                  // Username Field
+                  // ****************
+                  Container(
+                    margin: const EdgeInsets.all(15.0),
+                    padding: const EdgeInsets.all(20.0),
+                    decoration: BoxDecoration(
+                        border: Border.all(color: Colors.blueAccent)),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Username:",
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        StoreConnector<AppState, Store>(converter: (store) {
+                          return store;
+                        }, builder: (context, store) {
+                          return TextField(
+                              controller: _textController,
+                              focusNode: focusNode,
+                              decoration: InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  hintText: 'Username Here'),
+                              onSubmitted: (String value) async {
+                                store.dispatch(Username(value));
+                              });
+                        }),
+                      ],
+                    ),
+                  ),
+                  // ****************
+                  // Ready Up Button
+                  // ****************
+                  Container(
+                    margin: const EdgeInsets.all(15.0),
+                    padding: const EdgeInsets.all(20.0),
+                    child: Center(
+                      child: StoreConnector<AppState, bool>(converter: (store) {
+                        final state = store.state;
+                        return (state.location != null &&
+                            state.playerID != null &&
+                            state.teamID != null &&
+                            state.username != null);
+                      }, builder: (context, checkIfReady) {
+                        return SizedBox(
+                            width: double.infinity, // <-- match_parent
+                            child: RaisedButton(
+                                onPressed: checkIfReady ? () {print("Yes");} : null,
+                                child: Text("READY",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold))));
+                      }),
+                    ),
+                  ),
+                ],
               ),
-              
-            ],
-          ),
-        ));
+            )));
   }
 
   @override
   void dispose() {
+    _textController.dispose();
     socket.sink.close();
     super.dispose();
   }

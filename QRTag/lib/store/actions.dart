@@ -18,3 +18,8 @@ class PlayerID {
   final int payload;
   PlayerID(this.payload);
 }
+
+class Username {
+  final String payload;
+  Username(this.payload);
+}
