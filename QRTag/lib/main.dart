@@ -23,10 +23,8 @@ class MainPage extends StatefulWidget {
   QRTag createState() => QRTag();
 }
 
+// Root of aplication
 class QRTag extends State<MainPage> {
-  
-
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -83,14 +81,16 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   dynamic _permissionStatus;
 
-  Future<void> getLocationInfo() async {
-    Navigator.push(
+  Future<void> _getLocationInfo(BuildContext context) async {
+    final result = await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => QRPage(title: "QR Tag")),
     );
-    setState(() {
-      
-    });
+    Scaffold.of(context)
+      ..removeCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text("$result")));
+
+    setState(() {});
   }
 
   @override
@@ -118,39 +118,42 @@ class _HomePageState extends State<HomePage> {
           // the App.build method, and use it to set our appbar title.
           title: Text(widget.title),
         ),
-        body:
-            // Center is a layout widget. It takes a single child and positions it
-            // in the middle of the parent.
-            Container(
-          margin: const EdgeInsets.only(left: 20.0, right: 20.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: <Widget>[
-              Container(
-                margin: const EdgeInsets.all(15.0),
-                padding: const EdgeInsets.all(5.0),
-                decoration:
-                    BoxDecoration(border: Border.all(color: Colors.blueAccent)),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text("Location:"),
-                    TextButton(
-                      child: Text("Scan Now"),
-                      onPressed: getLocationInfo,
-                    ),
-                    
-                  ],
-                ),
-              ),
-              Text(
-                // '$_permissionStatus',
-                '$_permissionStatus',
-                style: Theme.of(context).textTheme.headline5,
-              ),
-            ],
-          ),
-        ) // This trailing comma makes auto-formatting nicer for build methods.
-        );
+        body: Builder(
+            builder: (context) =>
+
+                // Center is a layout widget. It takes a single child and positions it
+                // in the middle of the parent.
+                Container(
+                  margin: const EdgeInsets.only(left: 20.0, right: 20.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      Container(
+                        margin: const EdgeInsets.all(15.0),
+                        padding: const EdgeInsets.all(5.0),
+                        decoration: BoxDecoration(
+                            border: Border.all(color: Colors.blueAccent)),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Text("Location:"),
+                            TextButton(
+                              child: Text("Scan Now"),
+                              onPressed: () {
+                                _getLocationInfo(context);
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      Text(
+                        // '$_permissionStatus',
+                        '$_permissionStatus',
+                        style: Theme.of(context).textTheme.headline5,
+                      ),
+                    ],
+                  ),
+                )
+            ));
   }
 }
