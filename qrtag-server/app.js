@@ -158,7 +158,7 @@ io.on("connection", (socket, req) => {
           }
           let otherPlayer = undefined;
           for (let player of state.players.entries()) {
-            if (player[1][playerID] == json["id"]) {
+            if (player[1]["playerID"] == json["id"]) {
               otherPlayer = player[1]
             }
           }
