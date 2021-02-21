@@ -156,7 +156,7 @@ io.on("connection", (socket, req) => {
             }));
             return;
           }
-          for (let player of sate.players.entries()) {
+          for (let player of state.players.entries()) {
             console.log(player);
           }
           console.log(state.players)
