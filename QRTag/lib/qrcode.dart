@@ -3,7 +3,7 @@ class QRCode {
   /// QR Code type
   String type;
   /// ID from code
-  dynamic id;
+  int id;
   /// Time of Scan
   DateTime tos;
 

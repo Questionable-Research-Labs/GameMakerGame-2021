@@ -100,7 +100,7 @@ io.on("connection", (socket, req) => {
         if (!state.getBaseLocation(team)) {
           state.baseLocations.push({
             baseID: team,
-            location: ""
+            location: "home"
           })
         }
 
@@ -126,7 +126,7 @@ io.on("connection", (socket, req) => {
           // for (let player of state.players) {
           //   player.socket.send();
           // }
-          io.clients.forEach(function each(client) {
+          io.clients.forEach((client) => {
             client.send(JSON.stringify({message: "start game"}));
           });
      

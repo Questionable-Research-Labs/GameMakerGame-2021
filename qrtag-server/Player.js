@@ -39,7 +39,7 @@ export default class Player {
       uuid: uuid
     }));
 
-    io.clients.forEach(function each(client) {
+    io.clients.forEach((client) => {
       client.send(
         JSON.stringify({
           message: "base move",
