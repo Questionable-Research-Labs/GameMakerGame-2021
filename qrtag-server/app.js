@@ -243,7 +243,7 @@ io.on("connection", (socket, req) => {
     state.connections--;
 
     // Get the player that disconnected
-    let player = state.players[identifier];
+    let player = state.players.get(identifier);
 
     if (player) {
       // Delete all the user information and remove from lookup table
