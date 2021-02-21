@@ -119,7 +119,9 @@ io.on("connection", (socket, req) => {
         }));
 
         if (state.connections >= 2 && state.connections === state.players.size) {
-          io.emit("{'message': 'start game'}");
+          for (let player of state.players) {
+            player.socket.send("{'message': 'start game'}");
+          }
           state.gameOn = true;
         }
 
@@ -179,12 +181,14 @@ io.on("connection", (socket, req) => {
               let index = scanner.getIndex(state);
               state.players.get(index).increaseScore(uuid);
               state.teamScores[scanner.team]++;
-              io.emit(JSON.stringify({
-                message: "point scored",
-                team: scanner.team,
-                username: scanner.username,
-                userID: scanner.userID
-              }))
+              for (let player of state.players) {
+                player.socket.send(JSON.stringify({
+                  message: "point scored",
+                  team: scanner.team,
+                  username: scanner.username,
+                  userID: scanner.userID
+                }))
+              }
             }
             state.players.get(identifier).activate(uuid);
           } else {
