@@ -38,7 +38,9 @@
 <h1>Team Scores</h1>
 <p>${JSON.stringify(json["teamScores"], undefined, 2).replaceAll("\n", "<br />").replaceAll("  ", "\t")}</p>
 <h1>Base Locations</h1>
-<p>${JSON.stringify(json["baseLocations"], undefined, 2).replaceAll("\n", "<br />").replaceAll("  ", "\t")}</p>`);
+<p>${JSON.stringify(json["baseLocations"], undefined, 2).replaceAll("\n", "<br />").replaceAll("  ", "\t")}</p>
+<h1>Last Action</h1>
+<p>${JSON.stringify(json["request"], undefined, 2).replaceAll("\n", "<br />").replaceAll("  ", "\t")}</p>`);
         }
       };
 
