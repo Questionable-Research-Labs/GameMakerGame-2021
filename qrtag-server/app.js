@@ -26,7 +26,7 @@ const create_update = () => {
     players: [...state.players.keys()].map(key => {
       let player = state.players.get(key);
       return {
-        ipAddress: key,
+        identifier: key,
         id: player.playerID,
         username: player.username,
         score: player.score,
@@ -53,11 +53,11 @@ app.use("/", express.static("static"));
 // *--------------*
 io.on("connection", (socket, req) => {
   let isMonitor = false;
-  let ip = req.connection.remoteAddress;
+  let identifier;
 
   state.connections++;
 
-  console.log("New connection from", ip);
+  console.log("New connection");
 
   // Tell the client we are ready to connect
   socket.send('{"message": "ready"}');
@@ -79,11 +79,6 @@ io.on("connection", (socket, req) => {
         let newPlayer = new Player(json["playerID"], json["username"], team, socket);
 
         console.log([...state.players.keys()]);
-
-        if (ip in [...state.players.keys()]) {
-          socket.send(JSON.stringify({message: "joined", status: "Device already connected", uuid: json["uuid"]}));
-          break;
-        }
 
         for (let c of state.players) {
           c = c[1];
@@ -109,8 +104,10 @@ io.on("connection", (socket, req) => {
 
         console.log("Player joining", json);
 
+        // Set the playerID
+        identifier = state.players.size + 1;
         // Save the information
-        state.players.set(ip, newPlayer);
+        state.players.set(identifier, newPlayer);
 
         // Tell the client that they successfully joined
         socket.send(genResponse({
@@ -136,7 +133,7 @@ io.on("connection", (socket, req) => {
         
         let uuid = json["uuid"];
         let type = json["type"];
-        let scanner = state.players.get(ip);
+        let scanner = state.players.get(identifier);
 
         if (type === "player") {
           if (!scanner.active) {
@@ -187,7 +184,7 @@ io.on("connection", (socket, req) => {
                 userID: scanner.userID
               }))
             }
-            state.players.get(ip).activate(uuid);
+            state.players.get(identifier).activate(uuid);
           } else {
             if (state.getBaseLocation(base) === "home" && !scanner.hasBase(state)) {
               scanner.giveBase(state, base, uuid);
@@ -245,13 +242,13 @@ io.on("connection", (socket, req) => {
     state.connections--;
 
     // Get the player that disconnected
-    let player = state.players[ip];
+    let player = state.players[identifier];
 
     if (player) {
       // Delete all the user information and remove from lookup table
-      state.players.delete(ip);
+      state.players.delete(identifier);
 
-      console.log("Player ", ip, ":", player.username, "disconnected");
+      console.log("Player ", identifier, ":", player.username, "disconnected");
     }
   });
 });
