@@ -64,7 +64,13 @@ export default class Player {
   }
 
   giveBase(state, otherPlayer, uuid) {
-    let opIndex = _.find(state.players, { ...otherPlayer });
+    let index = undefined;
+    for (let player of state.players.entries()) {
+      if (player[1]["playerID"] == this["playerID"]) {
+        index = player[0]
+      }
+    }
+    let opIndex = index.find(state.players, { ...otherPlayer });
     let myBase = this.hasBase(state);
 
     state[opIndex].setBase(myBase);
@@ -76,7 +82,13 @@ export default class Player {
   }
 
   getIndex(state) {
-    return _.find(state.players, { ...this });
+    let index = undefined;
+    for (let player of state.players.entries()) {
+      if (player[1]["playerID"] == this["playerID"]) {
+        index = player[0]
+      }
+    }
+    return index;
   }
 
   removeBase(state, uuid) {
