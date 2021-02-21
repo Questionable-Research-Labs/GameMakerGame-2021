@@ -65,7 +65,7 @@ io.on("connection", (socket, req) => {
 
   // When a message is recieved
   socket.onmessage = (data) => {
-    console.log("DATA",data)
+    console.log("DATA",data.data)
     const json = JSON.parse(data.data);
 
     switch (json['message']) {
