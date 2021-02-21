@@ -83,8 +83,8 @@ io.on("connection", (socket, req) => {
 
         for (let c of state.players) {
           c = c[1];
-          console.log(c.playerID, json["playerID"]);
-          if (c.playerID === json["playerID"]) {
+          console.log(c.playerID, json["userID"]);
+          if (c.playerID === json["userID"]) {
             socket.send(genResponse({message: "joined", status: "PlayerID already taken", uuid: json["uuid"]}));
             return;
           }
