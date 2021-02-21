@@ -1,5 +1,5 @@
 export default class Player {
-  playerID = "";
+  playerID = 0;
   username = "";
   socket;
   score = 0;
