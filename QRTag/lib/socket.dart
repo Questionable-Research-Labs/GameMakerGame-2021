@@ -68,7 +68,7 @@ Future scanBase(QRCode qrCode) async {
 
 Future initWS() async {
   final store = appstore.store;
-  final socket = IOWebSocketChannel.connect("ws://localhost:4003");
+  final socket = IOWebSocketChannel.connect("ws://qrtag.qrl.nz");
   socket.stream.listen((message) {
     dynamic data = jsonDecode(message);
     handleMessage(data);
