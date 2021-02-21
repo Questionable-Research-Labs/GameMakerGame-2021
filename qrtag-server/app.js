@@ -156,7 +156,8 @@ io.on("connection", (socket, req) => {
             }));
             return;
           }
-          let otherPlayer = _.find(state.players, {'playerID': json["id"]});
+          let otherPlayer = _.find(state.players, {'playerID': 10});
+          console.log(_.find)
           console.log(state.players)
           console.log(otherPlayer)
           if (!otherPlayer) {
