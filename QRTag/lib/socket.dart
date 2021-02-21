@@ -59,13 +59,6 @@ Future joinGame(BuildContext context) async {
     print("WEB SOCKET STATUS");
 }
 
-Future scanPlayer(QRCode qrCode) async {
-  print(qrCode.toString());
-}
-Future scanBase(QRCode qrCode) async {
-  print(qrCode.toString());
-} 
-
 Future initWS() async {
   final store = appstore.store;
   final socket = IOWebSocketChannel.connect("ws://qrtag.qrl.nz");

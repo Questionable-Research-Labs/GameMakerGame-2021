@@ -18,14 +18,14 @@ Future<void> handleQRCode(QRCode qrCode) async {
   switch (qrCode.type) {
     case "player":
       if (qrCode.id != state.playerID) {
-        scanPlayer(qrCode).then((_) => {
+        sendScan(qrCode).then((_) => {
           print("Sucess For scan, it do be gamer")
         });
       }
       break;
     case "base":
       if (qrCode.id != state.teamID) {
-        scanBase(qrCode);
+        sendScan(qrCode);
       }
       break;
     default:
