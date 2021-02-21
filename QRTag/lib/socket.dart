@@ -21,9 +21,20 @@ Map<String,RequestCallback> handlerLookup = {};
 Future<void> readyToPlay(state) async {}
 
 Future joinGame(BuildContext context) async {
+  var state = getState();
+  if (state.readiedUp == true) {
+    print("Un Reading");
+    state.webSocketChannel.sink.close();
+    appstore.store.dispatch(SocketReady(false));
+    appstore.store.dispatch(WebSocketChannel(null));
+    appstore.store.dispatch(RediedUp(false));
+    return;
+  }
+  print("Readying!");
+
   final uuid = Uuid();
   final requestUUID = uuid.v4();
-  var state = getState();
+  
   if (!state.socketReady) {
     print("Instantiating WebSocket");
     initWS();
@@ -32,9 +43,10 @@ Future joinGame(BuildContext context) async {
   handlerLookup[requestUUID] = (data) async {
     print("Callback:"+data.toString());
     if (data["status"] != "accepted") {
-      errorDialog(context,data["state"]);
+      errorDialog(context,data["status"]);
     } else {
-      errorDialog(context,"but good");
+      appstore.store.dispatch(RediedUp(true));
+
     }
   };
   state.webSocketChannel.sink.add(jsonEncode(<String, dynamic>{
@@ -45,18 +57,6 @@ Future joinGame(BuildContext context) async {
       "uuid": requestUUID
     }));
     print("WEB SOCKET STATUS");
-
-    
-
-    // if (json["message"] == "joined") {
-    //   if (json["status"] == "accepted") {
-    //     return Future.value();
-    //   } else {
-    //     return Future.error(json["status"]);
-    //   }
-    // } else {
-    //   return Future.error("The API be vibin");
-    // }
 }
 
 Future scanPlayer(QRCode qrCode) async {
