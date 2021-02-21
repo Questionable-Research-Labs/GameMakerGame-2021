@@ -180,7 +180,7 @@ io.on("connection", (socket, req) => {
               otherPlayer.giveBase(state, scanner, uuid);
             }
           } else {
-            if (otherPlayer.hasBase()) {
+            if (otherPlayer.hasBase(state)) {
               otherPlayer.removeBase(state, uuid);
             }
             socket.send(JSON.stringify({
