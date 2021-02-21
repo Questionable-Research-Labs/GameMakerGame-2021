@@ -21,7 +21,7 @@ let monitor;
 app.use(cors());
 
 // Function to create state update object for monitor
-const create_update = () => {
+const create_update = (id, request) => {
   return {
     players: [...state.players.keys()].map(key => {
       let player = state.players.get(key);
@@ -35,7 +35,8 @@ const create_update = () => {
     }),
     teamScores: state.teamScores,
     baseLocations: state.baseLocations,
-    message: "update"
+    message: "update",
+    request: request
   }
 };
 
@@ -224,7 +225,7 @@ io.on("connection", (socket, req) => {
 
     // Notify the monitor about the update
     if (monitor) {
-      let data = create_update();
+      let data = create_update(identifier, json);
       monitor.send(JSON.stringify(data));
     }
   }
