@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'model/app_state.dart';
 import 'store/store.dart' as appstore;
 
-Future<void> genWrongQRCodeDialog(BuildContext context,String typeNeeded) async {
+Future<void> genWrongQRCodeDialog(
+    BuildContext context, String typeNeeded) async {
   return showDialog<void>(
     context: context,
     barrierDismissible: false, // user must tap button!
@@ -13,7 +14,8 @@ Future<void> genWrongQRCodeDialog(BuildContext context,String typeNeeded) async 
         content: SingleChildScrollView(
           child: ListBody(
             children: <Widget>[
-              Text('Sorry but that was not the correct type of QR Code, it needs to be: $typeNeeded'),
+              Text(
+                  'Sorry but that was not the correct type of QR Code, it needs to be: $typeNeeded'),
             ],
           ),
         ),
@@ -30,7 +32,7 @@ Future<void> genWrongQRCodeDialog(BuildContext context,String typeNeeded) async 
   );
 }
 
-Future<void> errorDialog(BuildContext context,String text) async {
+Future<void> errorDialog(BuildContext context, String text) async {
   return showDialog<void>(
     context: context,
     barrierDismissible: false, // user must tap button!
@@ -58,23 +60,15 @@ Future<void> errorDialog(BuildContext context,String text) async {
 }
 
 void showSnackBar(BuildContext context, String text) {
-  final snackBar = SnackBar(
-    content: Text('Yay! A SnackBar!'),
-    action: SnackBarAction(
-      label: 'Undo',
-      onPressed: () {
-        // Some code to undo the change.
-      },
-    ),
-  );
-
   // Find the Scaffold in the widget tree and use
   // it to show a SnackBar.
-  Scaffold.of(context).showSnackBar(snackBar);
+  Scaffold.of(context).showSnackBar(SnackBar(
+    content: Text(text ?? ""),
+  ));
 }
 
 bool isNumeric(String s) {
-  if(s == null) {
+  if (s == null) {
     return false;
   }
   return int.parse(s, onError: (e) => null) != null;

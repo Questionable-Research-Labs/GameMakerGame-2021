@@ -92,20 +92,22 @@ Future sendScan(QRCode code,BuildContext context) async {
         case "point scored":
           break;
         case "sucessfull tag":
+          print("Gamer");
+          showSnackBar(context, "You scanned $data['username'] in team $data['team']!");
           break;
-        
+        default:
+          break;
       }
     }
   };
-  final message = <String, dynamic>{
+
+  state.webSocketChannel.sink.add(jsonEncode({
     "message": "scan",
     "id": code.id,
     "type": code.type,
     "time": code.tos,
     "uuid": requestUUID
-  };
-
-  state.webSocketChannel.sink.add(jsonEncode(message));
+  }));
   // var result = jsonDecode(await socket.stream.single);
 
   // if (["not active", "bad scan", "no such base"].contains(result['message'])) {
