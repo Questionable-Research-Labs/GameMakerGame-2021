@@ -40,7 +40,7 @@ Future<void> errorDialog(BuildContext context,String text) async {
         content: SingleChildScrollView(
           child: ListBody(
             children: <Widget>[
-              Text(text),
+              Text(text ?? ""),
             ],
           ),
         ),

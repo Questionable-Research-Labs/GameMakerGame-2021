@@ -45,3 +45,8 @@ class HomeBaseStolen {
   final bool payload;
   HomeBaseStolen(this.payload);
 }
+
+class RediedUp {
+  final bool payload;
+  RediedUp(this.payload);
+}

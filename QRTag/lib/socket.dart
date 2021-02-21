@@ -30,7 +30,8 @@ Future joinGame(BuildContext context) async {
     state = getState();
   }
   handlerLookup[requestUUID] = (data) async {
-    if (data["state"] != "accepted") {
+    print("Callback:"+data.toString());
+    if (data["status"] != "accepted") {
       errorDialog(context,data["state"]);
     } else {
       errorDialog(context,"but good");
@@ -67,7 +68,7 @@ Future scanBase(QRCode qrCode) async {
 
 Future initWS() async {
   final store = appstore.store;
-  final socket = IOWebSocketChannel.connect("ws://qrtag.qrl.nz:80");
+  final socket = IOWebSocketChannel.connect("ws://localhost:4003");
   socket.stream.listen((message) {
     dynamic data = jsonDecode(message);
     handleMessage(data);

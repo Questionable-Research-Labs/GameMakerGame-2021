@@ -14,7 +14,7 @@ const app = express();
 const http = new Server(app);
 
 const port = process.env.PORT | 4003;
-const io = new WebSocket.Server({server: http,port: port});
+const io = new WebSocket.Server({server: http});
 
 let monitor;
 
@@ -64,6 +64,7 @@ io.on("connection", (socket, req) => {
 
   // When a message is recieved
   socket.onmessage = (data) => {
+    console.log("DATA",data)
     const json = JSON.parse(data.data);
 
     switch (json['message']) {
@@ -80,7 +81,7 @@ io.on("connection", (socket, req) => {
         console.log([...state.players.keys()]);
 
         if (ip in [...state.players.keys()]) {
-          socket.send(JSON.stringify({message: "joined", state: "Device already connected", uuid: json["uuid"]}));
+          socket.send(JSON.stringify({message: "joined", status: "Device already connected", uuid: json["uuid"]}));
           break;
         }
 
@@ -88,7 +89,7 @@ io.on("connection", (socket, req) => {
           c = c[1];
           console.log(c.playerID, json["playerID"]);
           if (c.playerID === json["playerID"]) {
-            socket.send(genResponse({message: "joined", state: "PlayerID already taken", uuid: json["uuid"]}));
+            socket.send(genResponse({message: "joined", status: "PlayerID already taken", uuid: json["uuid"]}));
             return;
           }
         }

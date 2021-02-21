@@ -33,6 +33,9 @@ AppState reducer(AppState prevState, dynamic action) {
     case HomeBaseStolen:
       newState.homeBaseStolen = action.payload;
       break;
+    case RediedUp:
+      newState.readiedUp = action.payload;
+      break;
     default: 
       print("Unmatched reducer AppState Action!!!!!");
   }

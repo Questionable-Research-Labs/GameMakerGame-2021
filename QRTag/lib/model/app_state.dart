@@ -12,8 +12,9 @@ class AppState {
   bool socketReady;
   bool currentlyDeactivated;
   bool homeBaseStolen;
+  bool readiedUp;
 
-  AppState({this.playerNumbers = const Tuple2<int,int>(0,1), this.socketReady = false});
+  AppState({this.playerNumbers = const Tuple2<int,int>(0,1), this.socketReady = false, this.readiedUp = false});
 
   AppState.fromAppState(AppState another) {
     location = another.location;
@@ -25,6 +26,7 @@ class AppState {
     socketReady = another.socketReady;
     currentlyDeactivated = another.currentlyDeactivated;
     homeBaseStolen = another.homeBaseStolen;
+    readiedUp = another.readiedUp;
 
   }
 }
