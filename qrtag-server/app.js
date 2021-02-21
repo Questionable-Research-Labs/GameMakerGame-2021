@@ -36,7 +36,8 @@ const create_update = (id, request) => {
     teamScores: state.teamScores,
     baseLocations: state.baseLocations,
     message: "update",
-    request: request
+    request: request,
+    gameOn: state.gameOn
   }
 };
 
