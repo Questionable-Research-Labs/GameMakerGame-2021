@@ -379,7 +379,10 @@ class _HomePageState extends State<HomePage> {
                                         socketManager.joinGame(context);
                                       }
                                     : null,
-                                child: Text("READY",
+                                child: store.state.readiedUp ? Text("READIED",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold))
+                                        : Text("READY",
                                     style: TextStyle(
                                         fontWeight: FontWeight.bold))));
                       }),
