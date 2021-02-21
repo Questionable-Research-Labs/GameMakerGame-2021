@@ -156,12 +156,15 @@ io.on("connection", (socket, req) => {
             }));
             return;
           }
+          let otherPlayer = undefined;
           for (let player of state.players.entries()) {
-            console.log(player);
+            if (player[1][playerID] == json["id"]) {
+              otherPlayer = player[1]
+            }
           }
           console.log(state.players)
           console.log(otherPlayer)
-          if (!otherPlayer) {
+          if (otherPlayer === undefined) {
             socket.send(JSON.stringify({
               message: "invalid player",
               error: true,
