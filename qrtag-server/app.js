@@ -5,7 +5,6 @@ import WebSocket from "ws";
 import State from "./State.js";
 import Player from "./Player.js";
 import _ from "lodash";
-import { json } from "body-parser";
 
 // Create the state object
 let state = new State();
