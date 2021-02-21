@@ -3,7 +3,7 @@ class QRCode {
   /// QR Code type
   String type;
   /// ID from code
-  var id;
+  dynamic id;
   /// Time of Scan
   DateTime tos;
 
@@ -15,6 +15,6 @@ class QRCode {
 
   @override
   String toString() {
-    return '{ ${this.type}, ${this.id} }';
+    return '{ ${this.type}, ${this.id}, ${this.tos} }';
   }
 }
