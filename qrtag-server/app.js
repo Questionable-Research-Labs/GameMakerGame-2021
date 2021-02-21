@@ -77,7 +77,7 @@ io.on("connection", (socket, req) => {
         let team = json["team"];
 
         // Create a new Player object
-        let newPlayer = new Player(json["playerID"], json["username"], team, socket);
+        let newPlayer = new Player(json["userID"], json["username"], team, socket);
 
         console.log([...state.players.keys()]);
 
