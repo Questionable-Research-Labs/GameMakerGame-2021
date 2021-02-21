@@ -123,7 +123,7 @@ io.on("connection", (socket, req) => {
           //   player.socket.send();
           // }
           io.clients.forEach(function each(client) {
-            client.send("{'message': 'start game'}");
+            client.send(JSON.stringify({message: "start game"}));
           });
      
           state.gameOn = true;
