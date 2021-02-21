@@ -73,11 +73,30 @@ Future initWS() async {
   store.dispatch(SocketReady(false));
 }
 
-Future sendScan(QRCode code) async {
+Future sendScan(QRCode code,BuildContext context) async {
+  var state = getState();
   final uuid = Uuid();
   final requestUUID = uuid.v4();
-  final store = appstore.store;
-  final socket = store.state.webSocketChannel;
+
+  if (!state.socketReady) {
+    print("Instantiating WebSocket");
+    initWS();
+    state = getState();
+  }
+  handlerLookup[requestUUID] = (data) async {
+    print("Callback:"+data.toString());
+    if (data.containsKey("error")) {
+      errorDialog(context,data["message"]);
+    } else {
+      switch (data["message"]){
+        case "point scored":
+          break;
+        case "sucessfull tag":
+          break;
+        
+      }
+    }
+  };
   final message = <String, dynamic>{
     "message": "scan",
     "id": code.id,
@@ -86,15 +105,14 @@ Future sendScan(QRCode code) async {
     "uuid": requestUUID
   };
 
-  socket.sink.add(jsonEncode(message));
+  state.webSocketChannel.sink.add(jsonEncode(message));
+  // var result = jsonDecode(await socket.stream.single);
 
-  var result = jsonDecode(await socket.stream.single);
-
-  if (["not active", "bad scan", "no such base"].contains(result['message'])) {
-    Future.error(result['message']);
-  } else {
-    handleMessage(result);
-  }
+  // if (["not active", "bad scan", "no such base"].contains(result['message'])) {
+  //   Future.error(result['message']);
+  // } else {
+  //   handleMessage(result);
+  // }
 }
 
 void handleMessage(Map<String, dynamic> data) {

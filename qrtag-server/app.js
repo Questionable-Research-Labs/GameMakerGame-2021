@@ -177,7 +177,12 @@ io.on("connection", (socket, req) => {
             if (otherPlayer.hasBase()) {
               otherPlayer.removeBase(state, uuid);
             }
-
+            socket.send(JSON.stringify({
+              message: "sucessfull tag",
+              username: otherPlayer.username,
+              team: otherPlayer.team,
+              uuid: uuid
+            }));
             state.players.get(otherPlayer.getIndex(state)).deactivate();
           }
         } else if (type === "base") {
@@ -194,7 +199,7 @@ io.on("connection", (socket, req) => {
                   message: "point scored",
                   team: scanner.team,
                   username: scanner.username,
-                  userID: scanner.userID
+                  userID: scanner.playerID
                 }))
               }
             }

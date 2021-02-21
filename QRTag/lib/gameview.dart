@@ -13,19 +13,19 @@ import 'qrview.dart';
 import 'utill.dart';
 import 'socket.dart';
 
-Future<void> handleQRCode(QRCode qrCode) async {
+Future<void> handleQRCode(QRCode qrCode, BuildContext context) async {
   final state = getState();
   switch (qrCode.type) {
     case "player":
       if (qrCode.id != state.playerID) {
-        sendScan(qrCode).then((_) => {
+        sendScan(qrCode, context).then((_) => {
           print("Sucess For scan, it do be gamer")
         });
       }
       break;
     case "base":
       if (qrCode.id != state.teamID) {
-        sendScan(qrCode);
+        sendScan(qrCode, context);
       }
       break;
     default:
@@ -113,7 +113,7 @@ class _GameViewState extends State<GameView> {
         var softwareCJFixes = scanData.code.replaceAll("http://", "");
         print(softwareCJFixes.substring(softwareCJFixes.length - 1, softwareCJFixes.length ));
         if (softwareCJFixes.substring(softwareCJFixes.length - 1, softwareCJFixes.length )!="}") {softwareCJFixes+="}";}
-        handleQRCode(QRCode.fromJson(softwareCJFixes));
+        handleQRCode(QRCode.fromJson(softwareCJFixes), context);
         
         
       } on FormatException catch (e) {
@@ -143,7 +143,7 @@ class _GameViewState extends State<GameView> {
           // the App.build method, and use it to set our appbar title.
           title: Text(widget.title ?? ""),
         ),
-        body:
+        body: 
             // Center is a layout widget. It takes a single child and positions it
             // in the middle of the parent.
             Container(

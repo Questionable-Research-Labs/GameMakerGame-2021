@@ -26,6 +26,7 @@ export default class Player {
     if (!index) {
       socket.send(JSON.stringify({
         message: 'no such base',
+        errror: true,
         uuid: uuid
       }));
       return;
@@ -71,7 +72,12 @@ export default class Player {
     let index = _.findIndex(state.baseLocations, { location: this.playerID.toString() });
 
     if (!index) {
-      return "no such base";
+      socket.send(JSON.stringify({
+        message: 'no such base',
+        errror: true,
+        uuid: uuid
+      }));
+      return;
     }
 
     state.baseLocations[index].location = "home";
