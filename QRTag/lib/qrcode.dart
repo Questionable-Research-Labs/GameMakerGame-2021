@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 /// A object storing the data of the json QR Codes
 class QRCode {
   /// QR Code type
@@ -5,15 +7,17 @@ class QRCode {
   /// ID from code
   int id;
   /// Time of Scan
-  DateTime tos;
+  String tos;
 
   QRCode(this.type, this.id, this.tos);
 
-  factory QRCode.fromJson(dynamic json) {
+  factory QRCode.fromJson(String jsonRaw) {
+    final json = jsonDecode(jsonRaw);
+    print(json);
     return QRCode(
-      json['type'].toString(),
+      json['type'],
       json['id'],
-      new DateTime.now()
+      new DateTime.now().toIso8601String()
     );
   }
 
