@@ -17,11 +17,22 @@ export default class Player {
   }
 
   hasBase(state) {
-    return _.find(state.baseLocations, { location: this.playerID.toString() });
+    let temp = undefined;
+    for (let player of state.baseLocations.entries()) {
+      if (player[1]["location"] == this.playerID) {
+        temp = player[1]
+      }
+    }
+    return temp;
   }
 
   setBase(state, base, uuid) {
-    let index = _.findIndex(state.baseLocations, { location: this.playerID.toString() });
+    let index = undefined;
+    for (let player of state.baseLocations.entries()) {
+      if (player[1]["location"] == this.playerID) {
+        index = player[0]
+      }
+    }
 
     if (!index) {
       socket.send(JSON.stringify({
@@ -69,7 +80,12 @@ export default class Player {
   }
 
   removeBase(state, uuid) {
-    let index = _.findIndex(state.baseLocations, { location: this.playerID.toString() });
+    let index = undefined;
+    for (let player of state.baseLocations.entries()) {
+      if (player[1]["location"] == this.playerID) {
+        index = player[0]
+      }
+    }
 
     if (!index) {
       socket.send(JSON.stringify({
