@@ -119,10 +119,13 @@ io.on("connection", (socket, req) => {
         }));
 
         if (state.connections >= 2 && state.connections === state.players.size) {
-          io.send("{'message': 'start game'}")
           // for (let player of state.players) {
           //   player.socket.send();
           // }
+          io.clients.forEach(function each(client) {
+            client.send("{'message': 'start game'}");
+          });
+     
           state.gameOn = true;
         }
 

@@ -39,15 +39,16 @@ export default class Player {
       uuid: uuid
     }));
 
-    for (let player of state.players) {
-      player.socket.send(JSON.stringify({
-        message: "base move",
-        uuid: uuid,
-        team: this.team,
-        username: this.username,
-        playerID: this.playerID
-      }));
-    }
+    io.clients.forEach(function each(client) {
+      client.send(
+        JSON.stringify({
+          message: "base move",
+          uuid: uuid,
+          team: this.team,
+          username: this.username,
+          playerID: this.playerID
+        }));
+    });
   }
 
   giveBase(state, otherPlayer, uuid) {
@@ -101,7 +102,7 @@ export default class Player {
   activate(uuid) {
     this.active = true;
     this.socket.send(JSON.stringify({
-      message: 'activate', 
+      message: 'activate',
       uuid: uuid
     }));
   }
