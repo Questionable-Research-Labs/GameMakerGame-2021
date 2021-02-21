@@ -10,7 +10,7 @@ class QRCode {
   QRCode(this.type, this.id, this.tos);
 
   factory QRCode.fromJson(dynamic json) {
-    return QRCode(json['type'] as String, json['id'], new DateTime.now());
+    return QRCode(json['type'].toString(), json['id'], new DateTime.now());
   }
 
   @override
