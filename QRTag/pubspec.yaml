@@ -39,6 +39,7 @@ dev_dependencies:
   redux: ^3.0.0
   web_socket_channel:
   tuple: ^1.0.3
+  uuid: ^2.2.2
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

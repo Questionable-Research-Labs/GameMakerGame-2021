@@ -5,6 +5,7 @@ import WebSocket from "ws";
 import State from "./State.js";
 import Player from "./Player.js";
 import _ from "lodash";
+import { json } from "body-parser";
 
 // Create the state object
 let state = new State();
@@ -38,14 +39,11 @@ const create_update = () => {
   }
 };
 
-// Function to split all the players into teams
-const split_player_into_teams = () => {
-  let teams = [];
-  for (let team of state.teamScores.keys()) {
-    teams[team] = [...state.players.entries()].filter(val => val["team"] === team);
-  }
-  return teams;
-};
+export const genResponse = (data) => {
+  return JSON.stringify(data); 
+  
+}
+
 
 // Serve the static files
 app.use("/", express.static("static"));
@@ -82,7 +80,7 @@ io.on("connection", (socket, req) => {
         console.log([...state.players.keys()]);
 
         if (ip in [...state.players.keys()]) {
-          socket.send('{"message": "joined", "state": "Device already connected"}');
+          socket.send(JSON.stringify({message: "joined", state: "Device already connected", uuid: json["uuid"]}));
           break;
         }
 
@@ -90,7 +88,7 @@ io.on("connection", (socket, req) => {
           c = c[1];
           console.log(c.playerID, json["playerID"]);
           if (c.playerID === json["playerID"]) {
-            socket.send('{"message": "joined", "state": "PlayerID already taken"}');
+            socket.send(genResponse({message: "joined", state: "PlayerID already taken", uuid: json["uuid"]}));
             return;
           }
         }
@@ -114,7 +112,11 @@ io.on("connection", (socket, req) => {
         state.players.set(ip, newPlayer);
 
         // Tell the client that they successfully joined
-        socket.send('{"message": "joined", "state": "accepted"}');
+        socket.send(genResponse({
+          message: "joined", 
+          status: "accepted", 
+          uuid: json["uuid"]
+        }));
 
         if (state.connections >= 2 && state.connections === state.players.size) {
           io.emit("{'message': 'start game'}");
@@ -130,31 +132,40 @@ io.on("connection", (socket, req) => {
         // Errors:
         //  - base scan
         //  - not active
-
+        
+        let uuid = json["uuid"];
         let type = json["type"];
         let scanner = state.players.get(ip);
 
         if (type === "player") {
           if (!scanner.active) {
-            scanner.socket.send("{'message': 'not active'}");
+            scanner.socket.send(genResponse({
+              message: 'not active', 
+              error: true,
+              uuid: uuid
+            }));
             return;
           }
           let otherPlayer = _.find(state.players, {playerID: json["id"]});
 
           if (!otherPlayer) {
-            socket.send("{'message': 'bad scan'}");
+            socket.send(JSON.stringify({
+              message: "invalid player",
+              error: true,
+              uuid: uuid
+            }));
             return;
           }
 
           if (scanner.team === otherPlayer.team) {
             if (scanner.hasBase(state) && !otherPlayer.hasBase(state)) {
-              scanner.giveBase(state, otherPlayer);
+              scanner.giveBase(state, otherPlayer, uuid);
             } else if (scanner.hasBase(state) && !otherPlayer.hasBase(state)) {
-              otherPlayer.giveBase(state, scanner);
+              otherPlayer.giveBase(state, scanner, uuid);
             }
           } else {
             if (otherPlayer.hasBase()) {
-              otherPlayer.removeBase();
+              otherPlayer.removeBase(state, uuid);
             }
 
             state.players.get(otherPlayer.getIndex(state)).deactivate();
@@ -164,20 +175,21 @@ io.on("connection", (socket, req) => {
 
           if (base === scanner.team) {
             if (scanner.hasBase(state)) {
-              scanner.removeBase(state);
+              scanner.removeBase(state, uuid);
               let index = scanner.getIndex(state);
-              state.players.get(index).increaseScore();
+              state.players.get(index).increaseScore(uuid);
               state.teamScores[scanner.team]++;
               io.emit(JSON.stringify({
                 message: "point scored",
                 team: scanner.team,
-                player: scanner.username
+                username: scanner.username,
+                userID: scanner.userID
               }))
             }
-            state.players.get(ip).activate();
+            state.players.get(ip).activate(uuid);
           } else {
             if (state.getBaseLocation(base) === "home" && !scanner.hasBase(state)) {
-              scanner.giveBase(state, base);
+              scanner.giveBase(state, base, uuid);
             }
           }
         }
@@ -188,7 +200,12 @@ io.on("connection", (socket, req) => {
       // *     online      *
       // *-----------------*
       case 'online':
-        socket.send(JSON.stringify({message: 'connected', value: state.players}))
+        socket.send(JSON.stringify({
+          message: 'online',
+          connected: state.players.size,
+          ready: state.connections,
+          uuid: json["uuid"]
+        }));
         break;
 
       case 'monitor':
@@ -196,10 +213,10 @@ io.on("connection", (socket, req) => {
         if (!monitor) {
           monitor = socket;
           isMonitor = true;
-          socket.send('{"message": "monitor connect", "status": "accepted"}');
+          socket.send(genResponse({message: "monitor connect", status: "accepted"}));
           console.log("Monitor connected");
         } else {
-          socket.send('{"message": "monitor connect", "status": "rejected"}');
+          socket.send({message: "monitor connect", status: "rejected"});
           socket.close();
         }
         break;

@@ -376,7 +376,7 @@ class _HomePageState extends State<HomePage> {
                                         store.state.teamID != null &&
                                         store.state.username != null)
                                     ? () {
-                                        socketManager.joinGame();
+                                        socketManager.joinGame(context);
                                       }
                                     : null,
                                 child: Text("READY",

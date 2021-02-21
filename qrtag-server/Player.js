@@ -17,14 +17,17 @@ export default class Player {
   }
 
   hasBase(state) {
-    return _.find(state.baseLocations, {location: this.playerID.toString()});
+    return _.find(state.baseLocations, { location: this.playerID.toString() });
   }
 
-  setBase(state, base) {
-    let index = _.findIndex(state.baseLocations, {location: this.playerID.toString()});
+  setBase(state, base, uuid) {
+    let index = _.findIndex(state.baseLocations, { location: this.playerID.toString() });
 
     if (!index) {
-      socket.send("{'message':'no such base'}");
+      socket.send(JSON.stringify({
+        message: 'no such base',
+        uuid: uuid
+      }));
       return;
     }
 
@@ -32,12 +35,14 @@ export default class Player {
 
     this.socket.send(JSON.stringify({
       message: "base receive",
-      baseID: base
+      baseID: base,
+      uuid: uuid
     }));
 
     for (let player of state.players) {
       player.socket.send(JSON.stringify({
         message: "base move",
+        uuid: uuid,
         team: this.team,
         username: this.username,
         playerID: this.playerID
@@ -45,23 +50,24 @@ export default class Player {
     }
   }
 
-  giveBase(state, otherPlayer) {
-    let opIndex = _.find(state.players, {...otherPlayer});
+  giveBase(state, otherPlayer, uuid) {
+    let opIndex = _.find(state.players, { ...otherPlayer });
     let myBase = this.hasBase(state);
 
     state[opIndex].setBase(myBase);
 
     this.socket.send(JSON.stringify({
       message: "base remove",
+      uuid: uuid
     }));
   }
 
   getIndex(state) {
-    return _.find(state.players, {...this});
+    return _.find(state.players, { ...this });
   }
 
-  removeBase(state) {
-    let index = _.findIndex(state.baseLocations, {location: this.playerID.toString()});
+  removeBase(state, uuid) {
+    let index = _.findIndex(state.baseLocations, { location: this.playerID.toString() });
 
     if (!index) {
       return "no such base";
@@ -71,29 +77,36 @@ export default class Player {
 
     this.socket.send(JSON.stringify({
       message: "base remove",
-      baseID: this.hasBase(state)
+      baseID: this.hasBase(state),
+      uuid: uuid
     }));
 
     for (let player of state.players) {
       player.socket.send(JSON.stringify({
         message: "base return",
         team: this.team,
-        playerID: this.playerID
+        playerID: this.playerID,
+        uuid: uuid
       }));
     }
   }
 
   deactivate() {
     this.active = false;
-    this.socket.send("{'message': 'deactivate'}");
+    this.socket.send(JSON.stringify({
+      message: 'deactivate',
+    }));
   }
 
-  activate() {
+  activate(uuid) {
     this.active = true;
-    this.socket.send("{'message': 'activate'}");
+    this.socket.send(JSON.stringify({
+      message: 'activate', 
+      uuid: uuid
+    }));
   }
 
-  increaseScore() {
+  increaseScore(uuid) {
     this.score++;
   }
 }

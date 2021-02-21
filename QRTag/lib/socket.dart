@@ -1,46 +1,63 @@
+import 'dart:js';
+
 import 'package:QRTag/gameview.dart';
 import 'package:QRTag/model/app_state.dart';
 import 'package:QRTag/qrcode.dart';
 import 'package:QRTag/store/actions.dart';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/io.dart';
+import 'package:uuid/uuid.dart';
+import 'package:uuid/uuid_util.dart';
+import 'package:tuple/tuple.dart';
+
+
 import 'dart:convert';
 import 'main.dart';
 
 import 'utill.dart';
 import 'store/store.dart' as appstore;
 // import 'package:flutter_redux/flutter_redux.dart';
+typedef Future RequestCallback(Map<String, dynamic> data);
+Map<String,RequestCallback> handlerLookup = {};
 
 Future<void> readyToPlay(state) async {}
 
-Future joinGame() async {
+Future joinGame(BuildContext context) async {
+  final uuid = Uuid();
+  final requestUUID = uuid.v4();
   var state = getState();
   if (!state.socketReady) {
     print("Instantiating WebSocket");
     initWS();
     state = getState();
   }
-  
+  handlerLookup[requestUUID] = (data) async {
+    if (data["state"] != "accepted") {
+      errorDialog(context,data["state"]);
+    } else {
+      errorDialog(context,"but good");
+    }
+  };
   state.webSocketChannel.sink.add(jsonEncode(<String, dynamic>{
       "message": "join",
       "userID": state.playerID,
       "username": state.username,
-      "team": state.teamID
+      "team": state.teamID,
+      "uuid": requestUUID
     }));
     print("WEB SOCKET STATUS");
 
-    var result = await state.webSocketChannel.stream.single;
-    var json = jsonDecode(result);
+    
 
-    if (json["message"] == "joined") {
-      if (json["status"] == "accepted") {
-        return Future.value();
-      } else {
-        return Future.error(json["status"]);
-      }
-    } else {
-      return Future.error("The API be vibin");
-    }
+    // if (json["message"] == "joined") {
+    //   if (json["status"] == "accepted") {
+    //     return Future.value();
+    //   } else {
+    //     return Future.error(json["status"]);
+    //   }
+    // } else {
+    //   return Future.error("The API be vibin");
+    // }
 }
 
 Future scanPlayer(QRCode qrCode) async {
@@ -65,6 +82,8 @@ Future initWS() async {
 }
 
 Future sendScan(QRCode code) async {
+  final uuid = Uuid();
+  final requestUUID = uuid.v4();
   final store = appstore.store;
   final socket = store.state.webSocketChannel;
   final message = <String, dynamic>{
@@ -72,6 +91,7 @@ Future sendScan(QRCode code) async {
     "id": code.id,
     "type": code.type,
     "time": code.tos,
+    "uuid": requestUUID
   };
 
   socket.sink.add(jsonEncode(message));
@@ -87,6 +107,12 @@ Future sendScan(QRCode code) async {
 
 void handleMessage(Map<String, dynamic> data) {
   final store = appstore.store;
+  if (data.containsKey("uuid")) {
+    if (handlerLookup.containsKey(data["uuid"])) {
+      handlerLookup[data["uuid"]](data);
+      return;
+    }
+  }
   switch (data['message']) {
     case "ready":
       store.dispatch(SocketReady(true));
@@ -114,8 +140,7 @@ void handleMessage(Map<String, dynamic> data) {
       // team: the team that the player who has the base belongs to
       // username: the players username
 
-      break;
-
+    
     default:
       print("Unimplemented message received");
   }
