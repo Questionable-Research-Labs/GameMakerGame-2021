@@ -118,6 +118,10 @@ io.on("connection", (socket, req) => {
           uuid: json["uuid"]
         }));
 
+        if (state.gameOn) {
+          socket.send(genResponse({message: "start game"}));
+        }
+
         if (state.connections >= 2 && state.connections === state.players.size) {
           // for (let player of state.players) {
           //   player.socket.send();
