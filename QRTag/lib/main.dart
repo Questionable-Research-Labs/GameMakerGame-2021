@@ -391,18 +391,18 @@ class _HomePageState extends State<HomePage> {
                   // *******************
                   // Ready Players Count
                   // *******************
-                  Container(
-                    margin: const EdgeInsets.all(15.0),
-                    padding: const EdgeInsets.all(20.0),
-                    child: Center(
-                        child: StoreConnector<AppState, Tuple2<int, int>>(
-                            converter: (store) {
-                      return store.state.playerNumbers;
-                    }, builder: (context, playerNumbers) {
-                      return Text(
-                          "People ready: ${playerNumbers.item1}/${playerNumbers.item2}"); // <playersReady,playersTotal>
-                    })),
-                  ),
+                  // Container(
+                  //   margin: const EdgeInsets.all(15.0),
+                  //   padding: const EdgeInsets.all(20.0),
+                  //   child: Center(
+                  //       child: StoreConnector<AppState, Tuple2<int, int>>(
+                  //           converter: (store) {
+                  //     return store.state.playerNumbers;
+                  //   }, builder: (context, playerNumbers) {
+                  //     return Text(
+                  //         "People ready: ${playerNumbers.item1}/${playerNumbers.item2}"); // <playersReady,playersTotal>
+                  //   })),
+                  // ),
                 ],
               ),
             ))));
