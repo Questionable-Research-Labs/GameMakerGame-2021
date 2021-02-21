@@ -1,5 +1,3 @@
-import 'dart:js';
-
 import 'package:QRTag/gameview.dart';
 import 'package:QRTag/model/app_state.dart';
 import 'package:QRTag/qrcode.dart';
@@ -69,7 +67,7 @@ Future scanBase(QRCode qrCode) async {
 
 Future initWS() async {
   final store = appstore.store;
-  final socket = IOWebSocketChannel.connect("ws://qrtag.qrl.nz:4003");
+  final socket = IOWebSocketChannel.connect("ws://qrtag.qrl.nz:80");
   socket.stream.listen((message) {
     dynamic data = jsonDecode(message);
     handleMessage(data);

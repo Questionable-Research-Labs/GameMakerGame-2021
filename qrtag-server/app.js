@@ -13,8 +13,9 @@ let state = new State();
 // Create all the state stuff
 const app = express();
 const http = new Server(app);
-const io = new WebSocket.Server({server: http});
+
 const port = process.env.PORT | 4003;
+const io = new WebSocket.Server({server: http,port: port});
 
 let monitor;
 
