@@ -129,7 +129,7 @@ io.on("connection", (socket, req) => {
           io.clients.forEach((client) => {
             client.send(JSON.stringify({message: "start game"}));
           });
-     
+
           state.gameOn = true;
         }
 
@@ -200,89 +200,117 @@ io.on("connection", (socket, req) => {
               let index = scanner.getIndex(state);
               state.players.get(index).increaseScore(uuid);
               state.teamScores[scanner.team]++;
-              for (let player of state.players) {
-                player.socket.send(JSON.stringify({
+              io.clients.forEach((client) => {
+                client.send(JSON.stringify({
                   message: "point scored",
                   team: scanner.team,
                   username: scanner.username,
                   userID: scanner.playerID
-                }))
+                }));
+              });
+
+              let teams = [...state.teamScores.keys()]
+                .map(key => {return {key: key, value: state.teamScores.get(key)}} )
+                .sort((a, b) => a.value > b.value ? -1 : a.value === b.value ? 0 : 1);
+
+              if (teams[0].value === 3) {
+                io.clients.forEach(client => {
+                  client.send(client.send(JSON.stringify({
+                    message: "match over",
+                    teams: teams,
+                    players: [...state.teamScores.values()]
+                      .sort((a, b) => a.score > b.score ? -1 : a.value === b.value ? 0 : 1).map((e) => {
+                        return {
+                          username: e.username,
+                          playerID: e.playerID,
+                          team: e.team
+                        }
+                      })
+                  })));
+                });
+
               }
             }
-            state.players.get(identifier).activate(uuid);
-          } else {
-            if (state.getBaseLocation(base) === "home" && !scanner.hasBase(state)) {
-              scanner.giveBase(state, base, uuid);
+
+              state.players.get(identifier).activate(uuid);
+            } else {
+              if (state.getBaseLocation(base) === "home" && !scanner.hasBase(state)) {
+                scanner.giveBase(state, base, uuid);
+              }
             }
           }
+
+          break;
+
+          // *-----------------*
+          // *     online      *
+          // *-----------------*
+        case
+          'online'
+        :
+          socket.send(JSON.stringify({
+            message: 'online',
+            connected: state.players.size,
+            ready: state.connections,
+            uuid: json["uuid"]
+          }));
+          break;
+
+        case
+          'monitor'
+        :
+          state.connections--;
+          if (!monitor) {
+            monitor = socket;
+            isMonitor = true;
+            socket.send(genResponse({message: "monitor connect", status: "accepted"}));
+            console.log("Monitor connected");
+          } else {
+            socket.send({message: "monitor connect", status: "rejected"});
+            socket.close();
+          }
+          break;
+        default:
+          break;
         }
 
-        break;
-
-      // *-----------------*
-      // *     online      *
-      // *-----------------*
-      case 'online':
-        socket.send(JSON.stringify({
-          message: 'online',
-          connected: state.players.size,
-          ready: state.connections,
-          uuid: json["uuid"]
-        }));
-        break;
-
-      case 'monitor':
-        state.connections--;
-        if (!monitor) {
-          monitor = socket;
-          isMonitor = true;
-          socket.send(genResponse({message: "monitor connect", status: "accepted"}));
-          console.log("Monitor connected");
-        } else {
-          socket.send({message: "monitor connect", status: "rejected"});
-          socket.close();
+        // Notify the monitor about the update
+        if (monitor) {
+          let data = create_update(identifier, json);
+          monitor.send(JSON.stringify(data));
         }
-        break;
-      default:
-        break;
     }
 
-    // Notify the monitor about the update
-    if (monitor) {
-      let data = create_update(identifier, json);
-      monitor.send(JSON.stringify(data));
-    }
+    // *-----------------*
+    // *    disconnect   *
+    // *-----------------*
+    socket.on("close", _socket => {
+      if (monitor) {
+        console.log("Monitor disconnected");
+        monitor = null;
+        return;
+      }
+
+      state.connections--;
+
+      // Get the player that disconnected
+      let player = state.players.get(identifier);
+
+      if (player) {
+        // Delete all the user information and remove from lookup table
+        state.players.delete(identifier);
+
+        console.log("Player ", identifier, ":", player.username, "disconnected");
+      }
+
+      // Notify the monitor about the update
+      if (monitor) {
+        let data = create_update(identifier, json);
+        monitor.send(JSON.stringify(data));
+      }
+    });
   }
-
-  // *-----------------*
-  // *    disconnect   *
-  // *-----------------*
-  socket.on("close", _socket => {
-    if (monitor) {
-      console.log("Monitor disconnected");
-      monitor = null;
-      return;
-    }
-
-    state.connections--;
-
-    // Get the player that disconnected
-    let player = state.players.get(identifier);
-
-    if (player) {
-      // Delete all the user information and remove from lookup table
-      state.players.delete(identifier);
-
-      console.log("Player ", identifier, ":", player.username, "disconnected");
-    }
-
-    // Notify the monitor about the update
-    if (monitor) {
-      let data = create_update(identifier, json);
-      monitor.send(JSON.stringify(data));
-    }
-  });
-});
+);
 
 app.get("/online", (req, res) => {
   res.send(JSON.stringify({online: state.players.size}));
