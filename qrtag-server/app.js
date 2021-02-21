@@ -41,8 +41,8 @@ const create_update = (id, request) => {
 };
 
 export const genResponse = (data) => {
-  return JSON.stringify(data); 
-  
+  return JSON.stringify(data);
+
 }
 
 
@@ -65,7 +65,7 @@ io.on("connection", (socket, req) => {
 
   // When a message is recieved
   socket.onmessage = (data) => {
-    console.log("DATA",data.data)
+    console.log("DATA", data.data)
     const json = JSON.parse(data.data);
 
     switch (json['message']) {
@@ -112,8 +112,8 @@ io.on("connection", (socket, req) => {
 
         // Tell the client that they successfully joined
         socket.send(genResponse({
-          message: "joined", 
-          status: "accepted", 
+          message: "joined",
+          status: "accepted",
           uuid: json["uuid"]
         }));
 
@@ -131,7 +131,7 @@ io.on("connection", (socket, req) => {
         // Errors:
         //  - base scan
         //  - not active
-        
+
         let uuid = json["uuid"];
         let type = json["type"];
         let scanner = state.players.get(identifier);
@@ -139,7 +139,7 @@ io.on("connection", (socket, req) => {
         if (type === "player") {
           if (!scanner.active) {
             scanner.socket.send(genResponse({
-              message: 'not active', 
+              message: 'not active',
               error: true,
               uuid: uuid
             }));
@@ -250,6 +250,12 @@ io.on("connection", (socket, req) => {
       state.players.delete(identifier);
 
       console.log("Player ", identifier, ":", player.username, "disconnected");
+    }
+
+    // Notify the monitor about the update
+    if (monitor) {
+      let data = create_update(identifier, json);
+      monitor.send(JSON.stringify(data));
     }
   });
 });
