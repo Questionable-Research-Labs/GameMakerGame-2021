@@ -12,7 +12,7 @@
             integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg=="
             crossorigin="anonymous"></script>
     <script>
-      const socket = new WebSocket("ws://qrtag.qrl.nz:4003");
+      const socket = new WebSocket("ws://qrtag.qrl.nz");
 
       socket.onmessage = (event) => {
         const json = JSON.parse(event.data);
