@@ -16,22 +16,11 @@ export default class Player {
   }
 
   hasBase(state: State) {
-    let temp = undefined;
-    for (let player of state.baseLocations.entries()) {
-      if (player[1]["location"] == this.playerID) {
-        temp = player[1]
-      }
-    }
-    return temp;
+    return state.baseLocations.find(val => val.location == this.playerID.toString());
   }
 
   setBase(state: State, base: number, uuid: string, io: WebSocket.Server) {
-    let index = undefined;
-    for (let player of state.baseLocations.entries()) {
-      if (player[1]["location"] == this.playerID) {
-        index = player[0]
-      }
-    }
+    let index = state.baseLocations.findIndex((element) => element.base = this.team);
 
     if (!index) {
       this.socket.send(JSON.stringify({
@@ -91,17 +80,12 @@ export default class Player {
   }
 
   removeBase(state, uuid) {
-    let index = undefined;
-    for (let player of state.baseLocations.entries()) {
-      if (player[1]["location"] == this.playerID) {
-        index = player[0]
-      }
-    }
+    let index = state.baseLocations.findIndex((element) => element.base = this.team);
 
     if (!index) {
       this.socket.send(JSON.stringify({
         message: 'no such base',
-        errror: true,
+        error: true,
         uuid: uuid
       }));
       return;
@@ -140,7 +124,12 @@ export default class Player {
     }));
   }
 
-  increaseScore(uuid) {
+  increaseScore() {
     this.score++;
+
+    this.socket.send(JSON.stringify({
+      message: "score change",
+      score: this.score
+    }))
   }
 }

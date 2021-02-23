@@ -1,23 +1,31 @@
 import Player from "./player";
+import _ from "lodash";
+import BaseLocation from "./baseLocation";
+import TeamScore from "./teamScore";
 
 export default class State {
-  public teamScores: Map<number, number>;
+  public teamScores: TeamScore[];
   public players: Map<number, Player>;
   public event_history: Array<any>;
-  public baseLocations: Map<number, string>;
+  public baseLocations: BaseLocation[];
   public gameOn: boolean;
   public connections: number;
 
   constructor() {
-    this.teamScores = new Map<number, number>();
+    this.teamScores = [];
     this.players = new Map<number, Player>();
     this.event_history = [];
-    this.baseLocations = new Map<number, string>();
+    this.baseLocations = [];
     this.gameOn = false;
     this.connections = 0;
   }
 
-  getBaseLocation(baseID: number): string {
-    return this.baseLocations.get(baseID);
+  getBaseLocation(baseID: number): BaseLocation {
+    return _.find(this.baseLocations, {base: baseID});
+  }
+
+  scorePoint(baseID: number) {
+    let index = this.teamScores.findIndex(val => val.team == baseID);
+    this.teamScores[index].incrementScore();
   }
 }

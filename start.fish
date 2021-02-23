@@ -10,6 +10,8 @@ set NODE_ENV production
 
 echo "Installing dependices"
 yarn install
+echo "Building"
+yarn build
 echo "Starting"
-pm2 start app.js --name qrtag-server
+pm2 start dist/index.js --name qrtag-server
 sudo /home/server/scripts/reloadNGINX.sh

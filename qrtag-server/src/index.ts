@@ -5,6 +5,8 @@ import WebSocket from "ws";
 import State from "./state";
 import Player from "./player";
 import _ from "lodash";
+import BaseLocation from "./baseLocation";
+import TeamScore from "./teamScore";
 
 // Create the state object
 let state = new State();
@@ -78,32 +80,25 @@ io.on("connection", (socket, req) => {
           let team = json["team"];
 
           // Create a new Player object
-          // let newPlayer = new Player(json["userID"], json["username"], team, socket);
-
           let newPlayer = new Player(team, socket, json["userID"], json["username"])
 
-          console.log([...state.players.keys()]);
-
+          // Check to see that the player ID is not already in use
           for (let c of state.players) {
-            c = c[1];
-            console.log(c.playerID, json["userID"]);
-            if (c.playerID === json["userID"]) {
+            let c2 = c[1];
+            if (c2.playerID === json["userID"]) {
               socket.send(genResponse({message: "joined", status: "PlayerID already taken", uuid: json["uuid"]}));
               return;
             }
           }
 
           // Check that the teams has a score
-          if (!state.teamScores[team]) {
-            state.teamScores[team] = 0;
+          if (!state.teamScores.find(val => team == val.team)) {
+            state.teamScores.push(new TeamScore(team));
           }
 
           // Check the the base has been initialized
           if (!state.getBaseLocation(team)) {
-            state.baseLocations.push({
-              baseID: team,
-              location: "home"
-            })
+            state.baseLocations.push(new BaseLocation(team));
           }
 
           console.log("Player joining", json);
@@ -159,7 +154,7 @@ io.on("connection", (socket, req) => {
               return;
             }
             let otherPlayer = undefined;
-            for (let player of state.players.entries()) {
+            for (let player of state.players) {
               if (player[1]["playerID"] == json["id"]) {
                 otherPlayer = player[1]
               }
@@ -200,8 +195,8 @@ io.on("connection", (socket, req) => {
               if (scanner.hasBase(state)) {
                 scanner.removeBase(state, uuid);
                 let index = scanner.getIndex(state);
-                state.players.get(index).increaseScore(uuid);
-                state.teamScores[scanner.team]++;
+                state.players.get(index).increaseScore();
+                state.scorePoint(scanner.team);
                 io.clients.forEach((client) => {
                   client.send(JSON.stringify({
                     message: "point scored",
@@ -211,17 +206,16 @@ io.on("connection", (socket, req) => {
                   }));
                 });
 
-                let teams = [...state.teamScores.keys()]
-                  .map(key => {return {key: key, value: state.teamScores.get(key)}} )
-                  .sort((a, b) => a.value > b.value ? -1 : a.value === b.value ? 0 : 1);
+                let teams = state.teamScores
+                  .sort((a, b) => a.score > b.score ? -1 : a.score === b.score ? 0 : 1);
 
-                if (teams[0].value === 3) {
+                if (teams[0].score === 3) {
                   io.clients.forEach(client => {
                     client.send(client.send(JSON.stringify({
                       message: "match over",
                       teams: teams,
-                      players: [...state.teamScores.values()]
-                        .sort((a, b) => a.score > b.score ? -1 : a.value === b.value ? 0 : 1).map((e) => {
+                      players: [...state.players.values()]
+                        .sort((a, b) => a.score > b.score ? -1 : a.score === b.score ? 0 : 1).map((e) => {
                           return {
                             username: e.username,
                             playerID: e.playerID,
@@ -236,7 +230,7 @@ io.on("connection", (socket, req) => {
 
               state.players.get(identifier).activate(uuid);
             } else {
-              if (state.getBaseLocation(base) === "home" && !scanner.hasBase(state)) {
+              if (state.getBaseLocation(base).location === "home" && !scanner.hasBase(state)) {
                 scanner.giveBase(state, base, uuid);
               }
             }
@@ -319,6 +313,7 @@ app.get("/online", (req, res) => {
 });
 
 // Start the server
-http.listen(port, "0.0.0.0", () => {
+http.listen(port, () => {
   console.log(`"listening on http://localhost:${port}"`);
 });
+
