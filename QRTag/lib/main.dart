@@ -79,7 +79,7 @@ class QRTag extends State<MainPage> {
             // When navigating to the "/" route, build the FirstScreen widget.
             '/': (context) => HomePage(title: 'QRTag'),
             // When navigating to the "/second" route, build the SecondScreen widget.
-            '/game': (context) => GameView(title: 'QRTag'),
+            '/game': (context) => GameViewScafold(title: 'QRTag'),
           },
         ));
   }

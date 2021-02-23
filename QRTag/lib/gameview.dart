@@ -33,8 +33,8 @@ Future<void> handleQRCode(QRCode qrCode, BuildContext context) async {
   }
 }
 
-class GameView extends StatefulWidget {
-  GameView({Key key, this.title = "Game"}) : super(key: key);
+class GameViewScafold extends StatefulWidget {
+  GameViewScafold({Key key, this.title = "Game"}) : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -47,6 +47,36 @@ class GameView extends StatefulWidget {
 
   final String title;
 
+  @override
+  _GameViewScafoldState createState() => _GameViewScafoldState();
+}
+
+class _GameViewScafoldState extends State<GameViewScafold> {
+  
+
+  @override
+  Widget build(BuildContext context) {
+    // This method is rerun every time setState is called, for instance as done
+    // by the _incrementCounter method above.
+    //
+    // The Flutter framework has been optimized to make rerunning build methods
+    // fast, so that you can just rebuild anything that needs updating rather
+    // than having to individually change instances of widgets.
+    return Scaffold(
+        appBar: AppBar(
+          // Here we take the value from the MyHomePage object that was created by
+          // the App.build method, and use it to set our appbar title.
+          title: Text(widget.title ?? ""),
+        ),
+        body: GameView()
+            // Center is a layout widget. It takes a single child and positions it
+            // in the middle of the parent.
+            
+        );
+  }
+}
+
+class GameView extends StatefulWidget {
   @override
   _GameViewState createState() => _GameViewState();
 }
@@ -131,27 +161,11 @@ class _GameViewState extends State<GameView> {
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-        appBar: AppBar(
-          // Here we take the value from the MyHomePage object that was created by
-          // the App.build method, and use it to set our appbar title.
-          title: Text(widget.title ?? ""),
-        ),
-        body: 
-            // Center is a layout widget. It takes a single child and positions it
-            // in the middle of the parent.
-            Container(
+    return Container(
                 margin: const EdgeInsets.only(left: 20.0, right: 20.0),
                 child:
                     Column(mainAxisAlignment: MainAxisAlignment.start, children: [
                   Expanded(flex: 4, child: _buildQrView(context)),
-                ])) // This trailing comma makes auto-formatting nicer for build methods.
-        );
+                ]));
   }
 }
