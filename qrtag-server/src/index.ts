@@ -127,7 +127,7 @@ io.on("connection", (socket, req) => {
         );
 
         if (state.gameOn) {
-          socket.send(genResponse({ message: "start game" }));
+          socket.send(genResponse({ message: "start game", uuid: json["uuid"], }));
         }
 
         if (

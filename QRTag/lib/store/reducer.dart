@@ -3,8 +3,6 @@ import 'actions.dart';
 
 AppState reducer(AppState prevState, dynamic action) {
   AppState newState = AppState.fromAppState(prevState);
-  print("REDUCER");
-  print(newState);
   switch (action.runtimeType) {
     case Location:
       newState.location = action.payload;

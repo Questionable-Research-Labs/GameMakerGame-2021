@@ -5,10 +5,30 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "QRTag",
+            "name": "Debug App",
             "cwd": "QRTag",
             "request": "launch",
             "type": "dart"
+        },
+        {
+            "name": "Debug Fallphone",
+            "cwd": "QRTag",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "ONEPLUS A6010"
+        },
+        {
+            "name": "Debug Kevins Phone",
+            "cwd": "QRTag",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "CPH1941"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Debug Fallphone & Kevins phone",
+            "configurations": ["Debug Fallphone", "Debug Kevins Phone"],
         }
     ]
 }

@@ -21,6 +21,7 @@ Map<String, RequestCallback> handlerLookup = {};
 Future<void> readyToPlay(state) async {}
 
 Future joinGame(BuildContext context) async {
+  print("Attempting to join game...");
   var state = getState();
   if (state.readiedUp == true) {
     print("Un Reading");
@@ -55,7 +56,7 @@ Future joinGame(BuildContext context) async {
     "team": state.teamID,
     "uuid": requestUUID
   }));
-  print("WEB SOCKET STATUS");
+  print("Join request sent");
 }
 
 Future initWS() async {
