@@ -65,7 +65,7 @@ Future initWS() async {
   socket.stream.listen((message) {
     dynamic data = jsonDecode(message);
     handleMessage(data);
-  }, onDone: wsReconnect, onError: (_) => wsReconnect());
+  }, onDone: () => wsReconnect(), onError: (_) => wsReconnect());
   socket.sink.done.then((v) {
     print("WEBSOCKET EXITED");
   });
@@ -74,12 +74,14 @@ Future initWS() async {
   store.dispatch(SocketReady(false));
 }
 
-void wsReconnect() {
+Future wsReconnect() {
   print("reconnecting");
 
   appstore.store.dispatch(SocketReady(false));
 
   initWS();
+
+  return Future.value();
 }
 
 Future sendScan(QRCode code, BuildContext context) async {
