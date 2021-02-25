@@ -7,50 +7,128 @@
             content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
     />
     <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
-    <title>Document</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"
-            integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg=="
-            crossorigin="anonymous"></script>
-    <script>
-      const socket = new WebSocket("ws://qrtag.qrl.nz");
+    <title>QR Tag Monitor</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
 
-      socket.onmessage = (event) => {
+    <style>
+        #ms {
+            text-align: center;
+        }
+
+        .data {
+            display: grid;
+            grid-template-columns: auto auto;
+        }
+
+        .info-cards {
+            display: flex;
+        }
+
+        .player {
+            padding: 10px;
+            border-radius: 10px;
+            background-color: #333;
+            color: #fff;
+        }
+
+        .player p {
+            font-weight: bold;
+        }
+
+        .player p span {
+            font-weight: normal;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <p id="ms">{{ monitorStatus }}</p>
+
+    <div class="data">
+        <div class="">
+            <h1>Players</h1>
+            <div v-for="player in players" class="info-cards">
+                <div class="player">
+                    <p>Name: <span>{{ player["username"] }}</span></p>
+                    <p>Identifier: <span>{{ player["identifier"] }}</span></p>
+                    <p>User ID: <span>{{ player["id"] }}</span></p>
+                    <p>Score: <span>{{ player["score"] }}</span></p>
+                    <p>Active: <span>{{ player["active"] }}</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="">
+            <h1>Team Scores</h1>
+            <div v-for="player in teamScores" class="info-cards">
+                <div class="player">
+                    <p>Team: <span>{{ player["team"] }}</span></p>
+                    <p>Score: <span>{{ player["score"] }}</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="">
+            <h1>Base Locations</h1>
+            <div v-for="player in baseLocations" class="info-cards">
+                <div class="player">
+                    <p>Base: <span>{{ player["base"] }}</span></p>
+                    <p>Location: <span>{{ player["location"] }}</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="div">
+            <h1>Message</h1>
+            <div class="player">
+                <p>Message: <span>{{ message }}</span></p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    let app = new Vue({
+        el: '#app',
+        data: {
+            monitorStatus: "disconnect",
+            players: [],
+            teamScores: [],
+            baseLocations: [],
+            message: ""
+        },
+    });
+
+    const socket = new WebSocket("ws://qrtag.qrl.nz");
+
+    socket.onmessage = (event) => {
         const json = JSON.parse(event.data);
 
         console.log(json);
 
         switch (json['message']) {
-          case "ready":
-            console.log("Received ready");
-            socket.send(JSON.stringify({message: "monitor"}));
-            break;
-          case "monitor connect":
-            if (json["status"] === "accepted") {
-              $("#status").html('Connected to server')
-            } else {
-              $("#status").html('Monitor all ready connected, fuck you')
-            }
-            break;
-          case "update":
-            $("#info").html(
-`<h1>Players</h1>
-<p>${JSON.stringify(json["players"], undefined, 2).replaceAll("\n", "<br />").replaceAll("  ", "\t")}</p>
-<h1>Team Scores</h1>
-<p>${JSON.stringify(json["teamScores"], undefined, 2).replaceAll("\n", "<br />").replaceAll("  ", "\t")}</p>
-<h1>Base Locations</h1>
-<p>${JSON.stringify(json["baseLocations"], undefined, 2).replaceAll("\n", "<br />").replaceAll("  ", "\t")}</p>
-<h1>Last Action</h1>
-<p>${JSON.stringify(json["request"], undefined, 2).replaceAll("\n", "<br />").replaceAll("  ", "\t")}</p>
-<h1>Game on</h1>
-<p>${JSON.stringify(json["gameOn"], undefined, 2).replaceAll("\n", "<br />").replaceAll("  ", "\t")}</p>\``);
+            case "ready":
+                console.log("Received ready");
+                socket.send(JSON.stringify({message: "monitor"}));
+                break;
+            case "monitor connect":
+                if (json['status'] === "accepted") {
+                    app.$data.monitorStatus = "Connected";
+                } else {
+                    app.$data.monitorStatus = "Connection rejected by server";
+                }
+                break;
+            case "update":
+                app.$data.players = json["players"];
+                app.$data.teamScores = json["teamScores"];
+                app.$data.baseLocations = json["baseLocations"];
+                app.$data.message = JSON.stringify(json["request"]);
+                console.log(json);
+                break;
         }
-      };
-
-    </script>
-</head>
-<body>
-<p id="status"></p>
-<p id="info"></p>
+    }
+</script>
 </body>
 </html>
 

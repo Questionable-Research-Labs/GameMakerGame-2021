@@ -12,7 +12,7 @@
             integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg=="
             crossorigin="anonymous"></script>
     <script>
-      const socket = new WebSocket("ws://qrtag.qrl.nz:4003");
+      const socket = new WebSocket("ws://qrtag.qrl.nz");
 
       socket.onmessage = (event) => {
         const json = JSON.parse(event.data);
@@ -22,7 +22,7 @@
         switch (json['message']) {
           case "ready":
             console.log("Received ready");
-            socket.send('{"message":"join","playerID":0,"username":"Hentai Master","team":0}');
+            socket.send('{"message":"join","userID":0,"username":"Hentai Master","team":0}');
             break;
           case "joined":
             console.log("Joined my bois");
