@@ -76,7 +76,5 @@ bool isNumeric(String s) {
 
 AppState getState() {
   final store = appstore.store;
-  print("Got State!");
-  print(store.state);
   return store.state;
 }

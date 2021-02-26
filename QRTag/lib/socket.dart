@@ -1,18 +1,15 @@
-import 'package:QRTag/gameview.dart';
-import 'package:QRTag/model/app_state.dart';
-import 'package:QRTag/qrcode.dart';
-import 'package:QRTag/store/actions.dart';
+import 'dart:convert';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:uuid/uuid.dart';
-import 'package:uuid/uuid_util.dart';
-import 'package:tuple/tuple.dart';
 
-import 'dart:convert';
 import 'main.dart';
-
 import 'utill.dart';
+import 'qrcode.dart';
 import 'store/store.dart' as appstore;
+import 'store/actions.dart';
 
 // import 'package:flutter_redux/flutter_redux.dart';
 typedef Future RequestCallback(Map<String, dynamic> data);
@@ -23,7 +20,7 @@ Future<void> readyToPlay(state) async {}
 Future joinGame(BuildContext context) async {
   print("Attempting to join game...");
   var state = getState();
-  if (state.readiedUp == true) {
+  if (!state.readiedUp) {
     print("Un Reading");
     state.webSocketChannel.sink.close();
     appstore.store.dispatch(SocketReady(false));
@@ -65,23 +62,13 @@ Future initWS() async {
   socket.stream.listen((message) {
     dynamic data = jsonDecode(message);
     handleMessage(data);
-  }, onDone: () => wsReconnect(), onError: (_) => wsReconnect());
+  }, onDone: () => appstore.store.dispatch(SocketReady(false)), onError: (_) => appstore.store.dispatch(SocketReady(false)));
   socket.sink.done.then((v) {
     print("WEBSOCKET EXITED");
   });
 
   store.dispatch(WebSocketChannel(socket));
   store.dispatch(SocketReady(false));
-}
-
-Future wsReconnect() {
-  print("reconnecting");
-
-  appstore.store.dispatch(SocketReady(false));
-
-  initWS();
-
-  return Future.value();
 }
 
 Future sendScan(QRCode code, BuildContext context) async {
@@ -104,8 +91,7 @@ Future sendScan(QRCode code, BuildContext context) async {
           break;
         case "sucessfull tag":
           print("Gamer");
-          showSnackBar(
-              context, "You scanned $data['username'] in team $data['team']!");
+          showSnackBar(context, "You scanned $data['username'] in team $data['team']!");
           break;
         default:
           break;
@@ -113,13 +99,8 @@ Future sendScan(QRCode code, BuildContext context) async {
     }
   };
 
-  state.webSocketChannel.sink.add(jsonEncode({
-    "message": "scan",
-    "id": code.id,
-    "type": code.type,
-    "time": code.tos,
-    "uuid": requestUUID
-  }));
+  state.webSocketChannel.sink
+      .add(jsonEncode({"message": "scan", "id": code.id, "type": code.type, "time": code.tos, "uuid": requestUUID}));
   // var result = jsonDecode(await socket.stream.single);
 
   // if (["not active", "bad scan", "no such base"].contains(result['message'])) {
@@ -165,5 +146,19 @@ void handleMessage(Map<String, dynamic> data) {
 
     default:
       print("Unimplemented message received");
+  }
+}
+
+
+void startWSTimer () {
+  print("Starting Websocket Timer");
+  new Timer.periodic(Duration(milliseconds: 500), (Timer t) => timerCallback() );
+}
+
+void timerCallback () {
+  final state = getState();
+  if (!state.socketReady) {
+    print("Web Socket Disconected, attempting to reconect...");
+    initWS();
   }
 }

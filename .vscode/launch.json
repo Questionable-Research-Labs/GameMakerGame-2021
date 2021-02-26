@@ -18,17 +18,36 @@
             "deviceId": "ONEPLUS A6010"
         },
         {
-            "name": "Debug Kevins Phone",
+            "name": "Debug Nathans",
+            "cwd": "QRTag",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "SM A205GN"
+        },
+        {
+            "name": "Debug Kevins",
             "cwd": "QRTag",
             "request": "launch",
             "type": "dart",
             "deviceId": "CPH1941"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Server",
+            "cwd": "${workspaceFolder}/qrtag-server/",
+            "program": "src/index.ts",
+            "outFiles": ["dist/**/*.js"]
         }
     ],
     "compounds": [
         {
             "name": "Debug Fallphone & Kevins phone",
-            "configurations": ["Debug Fallphone", "Debug Kevins Phone"],
+            "configurations": ["Debug Fallphone", "Debug Kevins",],
+        },
+        {
+            "name": "Debug Fallphone & Nathans phone",
+            "configurations": ["Debug Fallphone", "Debug Nathans",],
         }
     ]
 }
