@@ -377,7 +377,12 @@ class _HomePageState extends State<HomePage> {
                                         store.state.teamID != null &&
                                         store.state.username != null)
                                     ? () {
-                                        socketManager.joinGame(context);
+                                        if (store.state.readiedUp) {
+                                          socketManager.exitGame();
+                                        } else {
+                                          socketManager.joinGame(context);
+                                        }
+                                        
                                       }
                                     : null,
                                 child: store.state.readiedUp ? Text("READIED",

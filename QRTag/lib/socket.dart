@@ -20,14 +20,6 @@ Future<void> readyToPlay(state) async {}
 Future joinGame(BuildContext context) async {
   print("Attempting to join game...");
   var state = getState();
-  if (!state.readiedUp) {
-    print("Un Reading");
-    state.webSocketChannel.sink.close();
-    appstore.store.dispatch(SocketReady(false));
-    appstore.store.dispatch(WebSocketChannel(null));
-    appstore.store.dispatch(RediedUp(false));
-    return;
-  }
   print("Readying!");
 
   final uuid = Uuid();
@@ -35,7 +27,7 @@ Future joinGame(BuildContext context) async {
 
   if (!state.socketReady) {
     print("Instantiating WebSocket");
-    initWS();
+    await initWS();
     state = getState();
   }
   handlerLookup[requestUUID] = (data) async {
@@ -54,6 +46,15 @@ Future joinGame(BuildContext context) async {
     "uuid": requestUUID
   }));
   print("Join request sent");
+}
+
+Future exitGame() async {
+  var state = getState();
+  await state.webSocketChannel.sink.close();
+  appstore.store.dispatch(SocketReady(false));
+  appstore.store.dispatch(WebSocketChannel(null));
+  appstore.store.dispatch(RediedUp(false));
+  return;
 }
 
 Future initWS() async {
