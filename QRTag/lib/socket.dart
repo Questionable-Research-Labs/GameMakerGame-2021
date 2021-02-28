@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/io.dart';
@@ -59,7 +60,7 @@ Future exitGame() async {
 
 Future initWS() async {
   final store = appstore.store;
-  final socket = IOWebSocketChannel.connect("ws://qrtag.qrl.nz");
+  final socket = IOWebSocketChannel.connect("ws://localhost:4003");
   socket.stream.listen((message) {
     dynamic data = jsonDecode(message);
     handleMessage(data);
@@ -151,12 +152,21 @@ void handleMessage(Map<String, dynamic> data) {
 }
 
 
-void startWSTimer () {
+void instantiateSockets () {
   print("Starting Websocket Timer");
-  new Timer.periodic(Duration(milliseconds: 500), (Timer t) => timerCallback() );
+  new Timer.periodic(Duration(milliseconds: 200), (Timer t) => qrCodeScanManager() );
+  new Timer.periodic(Duration(milliseconds: 500), (Timer t) => wsDisconectManager() );
 }
 
-void timerCallback () {
+void qrCodeScanManager () {
+  final state = getState();
+  if (state.qrCodeQueue != null) {
+    state.qrCodeQueue.forEach((key, value) {
+      // sendScan(value, context)
+    });
+  }
+}
+void wsDisconectManager () {
   final state = getState();
   if (!state.socketReady) {
     print("Web Socket Disconected, attempting to reconect...");

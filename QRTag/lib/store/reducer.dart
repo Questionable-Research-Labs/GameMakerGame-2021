@@ -34,6 +34,9 @@ AppState reducer(AppState prevState, dynamic action) {
     case RediedUp:
       newState.readiedUp = action.payload;
       break;
+    case QRCodeQueue:
+      newState.qrCodeQueue = action.payload;
+      break;
     default: 
       print("Unmatched reducer AppState Action!!!!!");
   }

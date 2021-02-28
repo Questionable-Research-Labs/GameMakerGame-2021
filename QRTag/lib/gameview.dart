@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:QRTag/qrcode.dart';
+import 'package:QRTag/store/actions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 
@@ -12,25 +13,20 @@ import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'qrview.dart';
 import 'utill.dart';
 import 'socket.dart';
+import 'store/store.dart' as appstate;
 
 Future<void> handleQRCode(QRCode qrCode, BuildContext context) async {
-  final state = getState();
-  switch (qrCode.type) {
-    case "player":
-      if (qrCode.id != state.playerID) {
-        sendScan(qrCode, context).then((_) => {
-          print("Sucess For scan, it do be gamer")
-        });
-      }
-      break;
-    case "base":
-      if (qrCode.id != state.teamID) {
-        sendScan(qrCode, context);
-      }
-      break;
-    default:
-    print("Invalid QR Code Scaned");
+  var qrCodeQueue = getState().qrCodeQueue;
+  final scanDataID = qrCode.type+qrCode.id.toString();
+  if (!qrCodeQueue.containsKey(scanDataID)) {
+    qrCodeQueue[qrCode.type+qrCode.id.toString()] = qrCode;
+    print("New Scan and making the QR Code view look like this:");
+    print(qrCodeQueue);
+    appstate.store.dispatch(QRCodeQueue(qrCodeQueue));
+  } else {
+    print("QR Code Scanned but it is already in the database of scans to send next!");
   }
+  
 }
 
 class GameViewScafold extends StatefulWidget {

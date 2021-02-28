@@ -1,3 +1,4 @@
+import 'package:QRTag/qrcode.dart';
 import 'package:flutter/material.dart';
 import 'package:tuple/tuple.dart';
 import 'package:web_socket_channel/io.dart';
@@ -13,6 +14,7 @@ class AppState {
   bool currentlyDeactivated;
   bool homeBaseStolen;
   bool readiedUp;
+  Map<String, QRCode> qrCodeQueue;
 
   AppState({this.playerNumbers = const Tuple2<int,int>(0,1), this.socketReady = false, this.readiedUp = false});
 
@@ -27,6 +29,6 @@ class AppState {
     currentlyDeactivated = another.currentlyDeactivated;
     homeBaseStolen = another.homeBaseStolen;
     readiedUp = another.readiedUp;
-
+    qrCodeQueue = another.qrCodeQueue;
   }
 }

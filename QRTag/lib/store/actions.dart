@@ -1,4 +1,6 @@
 import 'package:web_socket_channel/io.dart';
+
+import '../qrcode.dart';
 /// Actions with Payload
 
 class Location {
@@ -49,4 +51,9 @@ class HomeBaseStolen {
 class RediedUp {
   final bool payload;
   RediedUp(this.payload);
+}
+
+class QRCodeQueue {
+  final Map<String, QRCode> payload;
+  QRCodeQueue(this.payload);
 }
