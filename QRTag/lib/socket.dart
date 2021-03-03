@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:async';
+import 'dart:html';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -37,6 +38,11 @@ Future joinGame(BuildContext context) async {
       errorDialog(context, data["status"]);
     } else {
       appstore.store.dispatch(RediedUp(true));
+      if (data["message"] == "joined start game") {
+        print("Immediate start");
+        startGame();
+      }
+      
     }
   };
   state.webSocketChannel.sink.add(jsonEncode(<String, dynamic>{
@@ -60,11 +66,11 @@ Future exitGame() async {
 
 Future initWS() async {
   final store = appstore.store;
-  final socket = IOWebSocketChannel.connect("ws://localhost:4003");
+  final socket = IOWebSocketChannel.connect("ws://192.168.10.136:4003");
   socket.stream.listen((message) {
     dynamic data = jsonDecode(message);
     handleMessage(data);
-  }, onDone: () => appstore.store.dispatch(SocketReady(false)), onError: (_) => appstore.store.dispatch(SocketReady(false)));
+  }, onDone: () => appstore.store.dispatch(SocketReady(false)), onError: (e) => {print(e)} );
   socket.sink.done.then((v) {
     print("WEBSOCKET EXITED");
   });
@@ -73,8 +79,9 @@ Future initWS() async {
   store.dispatch(SocketReady(false));
 }
 
-Future sendScan(QRCode code, BuildContext context) async {
+Future sendScan(QRCode code) async {
   var state = getState();
+  final context = state.messageQueue;
   final uuid = Uuid();
   final requestUUID = uuid.v4();
 
@@ -85,15 +92,23 @@ Future sendScan(QRCode code, BuildContext context) async {
   }
   handlerLookup[requestUUID] = (data) async {
     print("Callback:" + data.toString());
-    if (data.containsKey("error")) {
-      errorDialog(context, data["message"]);
+    if (data.containsKey("error") || !data.containsKey("message")) {
+      // errorDialog(context, data["message"]);
+      var newMessageQueue = state.messageQueue;
+      newMessageQueue.add(UIEventMessage(data["message"] ?? "Unkown error while scanning QR Code","error",DateTime.now()));
+      appstore.store.dispatch(MessageQueue(newMessageQueue));
     } else {
       switch (data["message"]) {
         case "point scored":
           break;
         case "sucessfull tag":
           print("Gamer");
-          showSnackBar(context, "You scanned $data['username'] in team $data['team']!");
+          var newMessageQueue = state.messageQueue;
+          newMessageQueue.add(UIEventMessage(data["message"],"info",DateTime.now()));
+          appstore.store.dispatch(MessageQueue(newMessageQueue));
+          print("Added QR Code to Queue");
+          print(newMessageQueue);
+          // showSnackBar(context, "You scanned $data['username'] in team $data['team']!");
           break;
         default:
           break;
@@ -126,8 +141,7 @@ void handleMessage(Map<String, dynamic> data) {
       break;
 
     case "start game":
-      navigatorKey.currentState.pushNamed('/game');
-
+      startGame();
       break;
 
     case "point scored":
@@ -151,6 +165,9 @@ void handleMessage(Map<String, dynamic> data) {
   }
 }
 
+void startGame () {
+  navigatorKey.currentState.pushNamed('/game');
+}
 
 void instantiateSockets () {
   print("Starting Websocket Timer");
@@ -160,10 +177,15 @@ void instantiateSockets () {
 
 void qrCodeScanManager () {
   final state = getState();
-  if (state.qrCodeQueue != null) {
+  if (state.qrCodeQueue != null) {return;}
+  
+  if (state.qrCodeQueue.length > 0) {
+    print("Processing QR Codes");
+    print(state.qrCodeQueue);
     state.qrCodeQueue.forEach((key, value) {
-      // sendScan(value, context)
+      sendScan(value);
     });
+    appstore.store.dispatch(QRCodeQueue({}));
   }
 }
 void wsDisconectManager () {

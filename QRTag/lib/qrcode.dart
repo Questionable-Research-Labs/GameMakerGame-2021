@@ -26,3 +26,15 @@ class QRCode {
     return '{ ${this.type}, ${this.id}, ${this.tos} }';
   }
 }
+
+/// A object storing the data of the json QR Codes
+class UIEventMessage {
+  /// QR Code type
+  String text;
+  /// ID from code
+  String type;
+  /// Time of Event
+  DateTime toe;
+
+  UIEventMessage(this.text, this.type, this.toe);
+}

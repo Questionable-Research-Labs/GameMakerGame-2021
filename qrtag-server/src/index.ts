@@ -68,7 +68,7 @@ io.on("connection", (socket, req) => {
   socket.onmessage = (data) => {
     console.log("DATA", data.data);
     const json = JSON.parse(data.data.toString());
-
+    debugger;
     switch (json["message"]) {
       // *-----------------*
       // *      join       *

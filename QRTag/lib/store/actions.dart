@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:web_socket_channel/io.dart';
 
 import '../qrcode.dart';
@@ -56,4 +57,9 @@ class RediedUp {
 class QRCodeQueue {
   final Map<String, QRCode> payload;
   QRCodeQueue(this.payload);
+}
+
+class MessageQueue {
+  final List<UIEventMessage> payload;
+  MessageQueue(this.payload);
 }

@@ -100,7 +100,7 @@
         },
     });
 
-    const socket = new WebSocket("ws://qrtag.qrl.nz");
+    const socket = new WebSocket("ws://localhost:4003");
 
     socket.onmessage = (event) => {
         const json = JSON.parse(event.data);

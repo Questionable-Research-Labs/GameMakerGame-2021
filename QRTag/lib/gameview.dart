@@ -13,10 +13,14 @@ import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'qrview.dart';
 import 'utill.dart';
 import 'socket.dart';
+import 'store/actions.dart';
 import 'store/store.dart' as appstate;
 
 Future<void> handleQRCode(QRCode qrCode, BuildContext context) async {
   var qrCodeQueue = getState().qrCodeQueue;
+  if (qrCodeQueue == null) {
+    qrCodeQueue = {};
+  }
   final scanDataID = qrCode.type+qrCode.id.toString();
   if (!qrCodeQueue.containsKey(scanDataID)) {
     qrCodeQueue[qrCode.type+qrCode.id.toString()] = qrCode;

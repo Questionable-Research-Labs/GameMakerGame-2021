@@ -113,7 +113,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _textController = TextEditingController();
-    socketManager.startWSTimer();
+    socketManager.instantiateSockets();
     socketManager.initWS();
   }
 
